@@ -1,0 +1,27 @@
+Mach1McleodUdpateQueuePolicy:
+  Type: 'AWS::SQS::QueuePolicy'
+  Properties:
+    PolicyDocument:
+      Version: 2012-10-17
+      Statement:
+        - Effect: Allow
+          Principal: 
+            Service: "s3.amazonaws.com"
+          Action:
+            - 'SQS:SendMessage'
+          Resource: !GetAtt Mach1McleodUpdateQueue.Arn
+          Condition:
+            ArnLike:
+              Fn::Join:
+                - ""
+                - - "arn:aws:s3:"
+                  - ":"
+                  - ":mach1-mcleod-"
+                  - ${self:provider.stage}
+            StringEquals:
+              aws:SourceAccount: !Ref AWS::AccountId
+    Queues:
+      - !Ref Mach1McleodUpdateQueue
+
+
+

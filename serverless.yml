@@ -42,7 +42,7 @@ package:
 
 resources:
   Resources: 
-    Mach1McleodUpdateQueue: ${file(config/sqs/mach1McleodUpdateQueue.yml):mach1McleodUpdateQueue}
+    Mach1McleodUpdateQueue: ${file(config/sqs/mach1McleodUpdateQueue.yml):Mach1McleodUpdateQueue}
     Mach1McleodSubscription: ${file(config/sns/mach1McleodSubscription.yml):Mach1McleodSubscription}
     Mach1McleodSNSTopicPolicy: ${file(config/sns/mach1McleodSNSTopicPolicy.yml):Mach1McleodSNSTopicPolicy}
     Mach1McleodSNSTopic: ${file(config/sns/mach1McleodSNSTopic.yml):Mach1McleodSNSTopic}

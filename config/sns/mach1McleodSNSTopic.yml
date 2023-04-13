@@ -1,6 +1,0 @@
-Mach1McleodSNSTopic:
-  Type: AWS::SNS::Topic
-  Properties:
-    TopicName: omni-mach1-mclead-s3-topic-${self:provider.stage}
-            
-  

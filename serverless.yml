@@ -18,6 +18,10 @@ provider:
         - dynamodb:UpdateItem
         - dynamodb:DeleteItem
       Resource: "*"
+    - Effect: "Allow"
+      Action:
+        - "s3:*"
+      Resource: "*"
   runtime: nodejs14.x
   environment:
     SERVICE: ${self:service}

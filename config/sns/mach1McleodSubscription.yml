@@ -1,0 +1,11 @@
+Mach1McleodSubscription:
+  Type: AWS::SNS::Subscription
+  Properties:
+    TopicArn: !GetAtt
+      - Mach1McleodSNSTopic
+      - Arn
+    Endpoint: !GetAtt
+      - Mach1McleodUpdateQueue
+      - Arn
+    Protocol: sqs
+    RawMessageDelivery: "true"

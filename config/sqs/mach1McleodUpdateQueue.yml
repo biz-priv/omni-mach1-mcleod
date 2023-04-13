@@ -1,0 +1,4 @@
+Mach1McleodUpdateQueue:
+  Type: AWS::SQS::Queue
+  Properties:
+    QueueName: omni-mach1-mcleod-queue-${self:provider.stage}

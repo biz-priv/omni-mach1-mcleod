@@ -1,0 +1,4 @@
+Mach1McleodSNSTopic:
+  Type: AWS::SNS::Topic
+            
+  

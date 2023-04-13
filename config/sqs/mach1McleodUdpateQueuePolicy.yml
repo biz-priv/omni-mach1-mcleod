@@ -15,7 +15,7 @@ Mach1McleodUdpateQueuePolicy:
               aws:SourceArn:
                 - Fn::Join:
                   - ""
-                  - - "arn:aws:sns:"
+                  - - "arn:aws:s3:"
                     - ":"
                     - ":mach1-mcleod-"
                     - ${self:provider.stage}

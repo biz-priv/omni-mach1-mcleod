@@ -11,18 +11,10 @@ Mach1McleodUdpateQueuePolicy:
             - 'SQS:SendMessage'
           Resource: !GetAtt Mach1McleodUpdateQueue.Arn
           Condition:
-            "ForAnyValue:ArnEquals":
-              aws:SourceArn:
-                - Fn::Join:
-                  - ""
-                  - - "arn:aws:s3:"
-                    - ":"
-                    - ":mach1-mcleod-"
-                    - ${self:provider.stage}
-            StringEquals:
-              aws:SourceAccount: !Ref AWS::AccountId
+            ArnEquals:
+              "aws:SourceArn": !Sub "arn:aws:s3:::mach1-mcleod-${self:custom.stage}"
     Queues:
-      - !Ref Mach1McleodUpdateQueue
+      - Ref: Mach1McleodUpdateQueue
 
 
 

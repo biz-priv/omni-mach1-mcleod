@@ -12,12 +12,7 @@ Mach1McleodUdpateQueuePolicy:
           Resource: !GetAtt Mach1McleodUpdateQueue.Arn
           Condition:
             ArnLike:
-              Fn::Join:
-                - ""
-                - - "arn:aws:s3:"
-                  - ":"
-                  - ":mach1-mcleod-"
-                  - ${self:provider.stage}
+              aws:SourceArn: 'arn:aws:s3:::mach1-mcleod-dev'
             StringEquals:
               aws:SourceAccount: !Ref AWS::AccountId
     Queues:

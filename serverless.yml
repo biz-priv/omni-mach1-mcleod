@@ -47,4 +47,4 @@ package:
 resources:
   Resources: 
     Mach1McleodUpdateQueue: ${file(config/sqs/mach1McleodUpdateQueue.yml):Mach1McleodUpdateQueue}
-    mach1McleodUdpateQueuePolicy: ${file(config/sqs/Mach1McleodUdpateQueuePolicy.yml):mach1McleodUdpateQueuePolicy}
+    mach1McleodUdpateQueuePolicy: ${file(config/sqs/mach1McleodUdpateQueuePolicy.yml):Mach1McleodUdpateQueuePolicy}

@@ -28,7 +28,7 @@ module.exports.handler = async (event, context) => {
     let resultArr = await parseCSVData(s3Stream);
     console.log("resultArr:", JSON.stringify(resultArr));
 
-    let promises = resultArr.map( (item) => putItem(process.env.MACH1_MALEOD_TABLE, item) );
+    let promises = resultArr.map( (item) => putItem(process.env.MACH1_MALEOD_TABLE, {...item, processed : false}) );
     await Promise.all(promises);
 }
 

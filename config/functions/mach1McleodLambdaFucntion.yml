@@ -1,0 +1,13 @@
+function:
+  name: omni-mach1-mcleod-${self:provider.stage}
+  handler: src/mach1-mcleod.handler
+  description: Omni Mach1 Mcleod
+  package:
+    patterns:
+      - "!**/*"
+      - "src/mach1-mcleod.js"
+      - "src/shared/**"
+  runtime: nodejs14.x
+  events:
+    - sqs:
+        arn: !GetAtt Mach1McleodUdpateQueuePolicy.Arn

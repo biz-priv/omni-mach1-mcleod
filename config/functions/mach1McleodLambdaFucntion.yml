@@ -9,7 +9,7 @@ function:
       - "src/shared/**"
   runtime: nodejs14.x
   layers:
-    - { Ref: OmniMach1McleodLayer }
+    - { Ref: OmniMach1McleodLayerLambdaLayer }
   events:
     - sqs:
         arn: !GetAtt Mach1McleodUpdateQueue.Arn

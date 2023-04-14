@@ -13,3 +13,5 @@ function:
   events:
     - sqs:
         arn: !GetAtt Mach1McleodUpdateQueue.Arn
+  environment:
+    MACH1_MALEOD_TABLE: ${ssm:/omni-mach1-mcleod/${self:provider.stage}/mach1-mcleod/ddb.tableName~true}

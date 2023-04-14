@@ -4,6 +4,7 @@ const s3 = new AWS.S3({
 });
 // const csv = require('@fast-csv/parse');
 const csv = require('csvtojson');
+const { putItem } = require('./shared/dynamodb');
 
 const csv_headers = ["source_system","CONSOL_NBR","ORIGIN_PORT","ORIGIN_CITY","ORIGIN_ST","ORIGIN_LOC_ID",
     "DESTINATION_PORT","DESTINATION_CITY","DESTINATION_ST","DESTINATION_LOC_ID","carrier","CARRIER_BOOKING_RREF",
@@ -17,7 +18,6 @@ module.exports.handler = async (event, context) => {
     let eventBody = JSON.parse(event.Records[0].body);
     let bucketName = eventBody.Records[0].s3.bucket.name;
     let objectName = eventBody.Records[0].s3.object.key;
- 
 
     const params = {
         Bucket: bucketName,
@@ -27,6 +27,9 @@ module.exports.handler = async (event, context) => {
 
     let resultArr = await parseCSVData(s3Stream);
     console.log("resultArr:", JSON.stringify(resultArr));
+
+    let promises = resultArr.map( (item) => putItem(process.env.MACH1_MALEOD_TABLE, item) );
+    await Promise.all(promises);
 }
 
 
@@ -36,8 +39,9 @@ async function parseCSVData(s3Stream) {
         csv({headers : csv_headers})
             .fromStream(s3Stream)
             .on("data", (data) => {
-                if( data.CONSOL_NBR != null ) {
-                    result.push(data);
+                const obj = JSON.parse(data.toString('utf8'));
+                if( obj.CONSOL_NBR != null ) {
+                    result.push(obj);
                 }
             })
             .on("end", () => {

@@ -4,10 +4,8 @@ Mach1McleodDynamoTable:
     TableName: omni-mach1-mcleod-${self:provider.stage}
     BillingMode: PAY_PER_REQUEST
     AttributeDefinitions:
-      - AttributeName: "id"
-        AttributeType: "S"
-      - AttributeName: "housebill"
+      - AttributeName: "CONSOL_NBR"
         AttributeType: "S"
     KeySchema:
-      - AttributeName: "id"
+      - AttributeName: "CONSOL_NBR"
         KeyType: HASH

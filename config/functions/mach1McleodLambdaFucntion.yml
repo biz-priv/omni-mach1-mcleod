@@ -10,4 +10,4 @@ function:
   runtime: nodejs14.x
   events:
     - sqs:
-        arn: !GetAtt Mach1McleodUdpateQueuePolicy.Arn
+        arn: !GetAtt Mach1McleodUpdateQueue.Arn

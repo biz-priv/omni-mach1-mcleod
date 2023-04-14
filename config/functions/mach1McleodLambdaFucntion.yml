@@ -8,6 +8,8 @@ function:
       - "src/mach1-mcleod.js"
       - "src/shared/**"
   runtime: nodejs14.x
+  layers:
+    - { Ref: OmniMach1McleodLayer }
   events:
     - sqs:
         arn: !GetAtt Mach1McleodUpdateQueue.Arn

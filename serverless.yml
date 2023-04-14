@@ -44,6 +44,15 @@ custom:
 package:
   individually: true
 
+layers:
+  OmniMach1McleodLayer:
+    path: lambdaLayer/lib
+    name: ${self:service}-layer-${self:provider.stage}
+    description: Omni Mach1-Mcleod lambda layer for all node modules - ${self:provider.stage}
+    compatibleRuntimes:
+      - nodejs14.x
+    retain: false
+
 functions:
   omni_mach_mcleod: ${file(config/functions/mach1McleodLambdaFucntion.yml):function}
 

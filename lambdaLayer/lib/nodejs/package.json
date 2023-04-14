@@ -9,6 +9,7 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
-    "aws-sdk": "^2.1333.0"
+    "aws-sdk": "^2.1333.0",
+    "fast-csv": "^4.3.6"
   }
 }

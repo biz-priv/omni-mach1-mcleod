@@ -1,0 +1,13 @@
+Mach1McleodDynamoTable:
+  Type: AWS::DynamoDB::Table
+  Properties:
+    TableName: omni-mach1-mcleod-${self:provider.stage}
+    BillingMode: PAY_PER_REQUEST
+    AttributeDefinitions:
+      - AttributeName: "id"
+        AttributeType: "S"
+      - AttributeName: "housebill"
+        AttributeType: "S"
+    KeySchema:
+      - AttributeName: "id"
+        KeyType: HASH

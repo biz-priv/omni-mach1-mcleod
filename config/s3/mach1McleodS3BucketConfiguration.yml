@@ -1,7 +1,5 @@
 Mach1McleodS3BucketConfiguration:
   Type: 'AWS::S3::BucketNotification'
-  DependsOn:
-    - QueuePolicy
   Properties:
     BucketName: 'mach1-mcleod-dev'
     NotificationConfiguration:

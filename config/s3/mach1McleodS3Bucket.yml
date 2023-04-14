@@ -1,8 +1,0 @@
-Mach1McleodS3Bucket:
-  Type: 'AWS::S3::Bucket'
-  Properties:
-    BucketName: 'mach1-mcleod-dev'
-    NotificationConfiguration:
-      QueueConfigurations:
-        - Event: 's3:ObjectCreated:*'
-          Queue: !GetAtt Mach1McleodUpdateQueue.Arn

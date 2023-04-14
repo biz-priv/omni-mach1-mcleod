@@ -1,5 +1,5 @@
 function:
-  name: omni-mach1-mcleod-${self:provider.stage}
+  name: omni-m1-mcleod-csv-import-${self:provider.stage}
   handler: src/mach1-mcleod.handler
   description: Omni Mach1 Mcleod
   package:
@@ -15,3 +15,10 @@ function:
         arn: !GetAtt Mach1McleodUpdateQueue.Arn
   environment:
     MACH1_MALEOD_TABLE: ${ssm:/omni-mach1-mcleod/${self:provider.stage}/mach1-mcleod/ddb.tableName~true}
+    MALEOD_API_ENDPOINT: ${ssm:/omni-mach1-mcleod/${self:provider.stage}/mcleod-api-endpoint~true}
+    MALEOD_API_TOKEN: ${ssm:/omni-mach1-mcleod/${self:provider.stage}/mcleod-api-token~true}
+  vpc:
+    securityGroupIds:
+    - ${ssm:/omni-dw/${self:provider.stage}/lambda/sgId}
+    subnetIds:
+    - ${ssm:/omni-dw/${self:provider.stage}/lambda/subnetA}

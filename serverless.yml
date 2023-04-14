@@ -59,6 +59,5 @@ functions:
 resources:
   Resources: 
     Mach1McleodUpdateQueue: ${file(config/sqs/mach1McleodUpdateQueue.yml):Mach1McleodUpdateQueue}
-    Mach1McleodUdpateQueuePolicy: ${file(config/sqs/mach1McleodUdpateQueuePolicy.yml):Mach1McleodUdpateQueuePolicy}
+    Mach1McleodUdpateQueuePolicy: ${file(config/sqs/mach1McleodUpdateQueue.yml):Mach1McleodUdpateQueuePolicy}
     Mach1McleodDynamoTable: ${file(config/dynamodb/mach1McleodDynamoTable.yml):Mach1McleodDynamoTable}
-    # Mach1McleodS3Bucket: ${file(config/s3/mach1McleodS3Bucket.yml):Mach1McleodS3Bucket}

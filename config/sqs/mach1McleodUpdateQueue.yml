@@ -2,3 +2,23 @@ Mach1McleodUpdateQueue:
   Type: AWS::SQS::Queue
   Properties:
     QueueName: omni-mach1-mcleod-queue-${self:provider.stage}
+
+Mach1McleodUdpateQueuePolicy:
+  Type: 'AWS::SQS::QueuePolicy'
+  Properties:
+    Queues:
+      - !Ref Mach1McleodUpdateQueue
+    PolicyDocument:
+      Version: "2012-10-17"
+      Statement:
+        - Effect: Allow
+          Principal: 
+            Service: "s3.amazonaws.com"
+          Action:
+            - 'SQS:SendMessage'
+          Resource: !GetAtt Mach1McleodUpdateQueue.Arn
+          Condition:
+            ArnEquals:
+              "aws:SourceArn": !Sub "arn:aws:s3:::mach1-mcleod-${self:custom.stage}"
+            StringEquals:
+              aws:SourceAccount: !Ref AWS::AccountId

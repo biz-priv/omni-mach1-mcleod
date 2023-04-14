@@ -1,4 +1,4 @@
-Mach1McleodS3BucketConfiguration:
+Mach1McleodS3Bucket:
   Type: 'AWS::S3::Bucket'
   Properties:
     BucketName: 'mach1-mcleod-dev'

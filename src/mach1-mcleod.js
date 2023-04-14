@@ -25,7 +25,7 @@ module.exports.handler = async (event, context) => {
       };
     const s3Stream = s3.getObject(params).createReadStream();
 
-    let resultArr = await csv({headers : csv_headers}).fromStream(s3Stream);
+    let resultArr = await parseCSVData(s3Stream);
     console.log("resultArr:", JSON.stringify(resultArr));
 }
 
@@ -33,10 +33,12 @@ module.exports.handler = async (event, context) => {
 async function parseCSVData(s3Stream) {
     return new Promise( (resolve, reject) => {
         let result = [];
-        csv
-            .parseStream(s3Stream)
+        csv({headers : csv_headers})
+            .fromStream(s3Stream)
             .on("data", (data) => {
-                result.push(data);
+                if( data.CONSOL_NBR != null ) {
+                    result.push(data);
+                }
             })
             .on("end", () => {
                 resolve( result )

@@ -10,9 +10,6 @@ function:
   runtime: nodejs14.x
   layers:
     - { Ref: OmniMach1McleodLayerLambdaLayer }
-  events:
-    - sqs:
-        arn: !GetAtt Mach1McleodUpdateQueue.Arn
   environment:
     MACH1_MALEOD_TABLE: ${ssm:/omni-mach1-mcleod/${self:provider.stage}/mach1-mcleod/ddb.tableName~true}
     MALEOD_API_ENDPOINT: ${ssm:/omni-mach1-mcleod/${self:provider.stage}/mcleod-api-endpoint~true}

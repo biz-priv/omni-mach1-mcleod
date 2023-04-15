@@ -1,11 +1,11 @@
 function:
   name: omni-m1-mcleod-api-${self:provider.stage}
-  handler: src/mach1-mcleod.handler
+  handler: src/api-function.handler
   description: Omni Mach1 Mcleod
   package:
     patterns:
       - "!**/*"
-      - "src/mach1-mcleod.js"
+      - "src/api-function.js"
       - "src/shared/**"
   runtime: nodejs14.x
   layers:

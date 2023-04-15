@@ -44,17 +44,13 @@ async function parseCSVData(s3Stream) {
             .on("data", (data) => {
                 const obj = JSON.parse(data.toString('utf8'));
                 if( obj.CONSOL_NBR != null ) {
-                    result.push(processRecord(obj));
+                    result.push(obj);
                 }
             })
             .on("end", () => {
                 resolve( result )
             });
     });
-}
-
-function processRecord(item) {
-    return { ...item };
 }
 
 async function putItem(item) {

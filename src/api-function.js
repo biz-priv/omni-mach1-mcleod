@@ -41,7 +41,7 @@ async function processRecord( item ) {
         let createNewOrderPayload = generatePayloadForCreateOrder( orderDetails, item );
         await postNewOrder(createNewOrderPayload);
 
-        await putItem( process.env.MACH1_MALEOD_TABLE, { CONSOL_NBR : item.CONSOL_NBR, processed : 'true' } );
+        await putItem( process.env.MACH1_MALEOD_TABLE, { ...item, processed : 'true' } );
         promiseResponse.success = true;
     } catch( e ) {
         console.log( `Error for ${item.CONSOL_NBR}`, e )
@@ -129,7 +129,7 @@ function generatePayloadForCreateOrder(getOrderResponse, item) {
     orderDetails.freightGroup.total_weight = item.CHARGEABLE_WEIGHT;
     orderDetails.freightGroup.weight_uom_type_code = "LBS";
 
-    orderDetails.freightGroup.freightGroupItems[0] = {
+    orderDetails.freightGroup.freightGroupItems = [{
         "__type": "freight_group_item",
         "__name": "freightGroupItems",
         "company_id": "TMS",
@@ -141,7 +141,7 @@ function generatePayloadForCreateOrder(getOrderResponse, item) {
         "req_spots": item.SHIP_COUNT,
         "weight": item.CHARGEABLE_WEIGHT,
         "weight_uom_type_code": "LBS"
-    }
+    }];
 }
 
 async function postNewOrder(bodyPayload) {

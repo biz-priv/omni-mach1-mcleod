@@ -1,60 +1,5 @@
-const AWS = require('aws-sdk');
-const request = require('request');
-const moment = require('moment-timezone');
-const s3 = new AWS.S3({
-    region: 'us-east-1'
-});
-// const csv = require('@fast-csv/parse');
-const csv = require('csvtojson');
-const { putItem } = require('./shared/dynamodb');
-
-const csv_headers = ["source_system","CONSOL_NBR","ORIGIN_PORT","ORIGIN_CITY","ORIGIN_ST","ORIGIN_LOC_ID",
-    "DESTINATION_PORT","DESTINATION_CITY","DESTINATION_ST","DESTINATION_LOC_ID","carrier","CARRIER_BOOKING_RREF",
-    "AGENT_REF","BOL","OTHER_INFO","TRUCK_REF","AGENT_TYPE","TRANSPORT_MODE","CONSOL_MODE","ETD","ETA","ATD","ATA",
-    "SHIP_COUNT","PACKS","ACTUAL_WEIGHT","CHARGEABLE_WEIGHT","UW"
-] 
-
-module.exports.handler = async (event, context) => {
-    console.log("EVENT:", event);
-    
-    let eventBody = JSON.parse(event.Records[0].body);
-    let bucketName = eventBody.Records[0].s3.bucket.name;
-    let objectName = eventBody.Records[0].s3.object.key;
-
-    const params = {
-        Bucket: bucketName,
-        Key: objectName,
-      };
-    const s3Stream = s3.getObject(params).createReadStream();
-
-    let resultArr = await parseCSVData(s3Stream);
-    console.log("resultArr:", JSON.stringify(resultArr));
-
-    let promises = resultArr.map( (item) => putItem(process.env.MACH1_MALEOD_TABLE, {...item, processed : false}) );
-    await Promise.all(promises);
-
-    promises = resultArr.map( (item) => processRecord(item) );
-    await Promise.all(promises);
-
-}
 
 
-async function parseCSVData(s3Stream) {
-    return new Promise( (resolve, reject) => {
-        let result = [];
-        csv({headers : csv_headers, noheader: true})
-            .fromStream(s3Stream)
-            .on("data", (data) => {
-                const obj = JSON.parse(data.toString('utf8'));
-                if( obj.CONSOL_NBR != null ) {
-                    result.push(obj);
-                }
-            })
-            .on("end", () => {
-                resolve( result )
-            });
-    });
-}
 
 async function processRecord( item ) {
     let getOrderPayload = {
@@ -124,12 +69,13 @@ async function processRecord( item ) {
 }
 
 async function getNewOrder(bodyPayload) {
+    process.env["NODE_TLS_REJECT_UNAUTHORIZED"] = 0;
     let options = {
         uri: process.env.MALEOD_API_ENDPOINT + "new",
         method: 'GET',
         headers: {
             'Content-Type': 'application/json',
-            'Authorization': `Basic ${process.env.MALEOD_API_TOKEN}`
+            'Authorization': `Bearer ${process.env.MALEOD_API_TOKEN}`
         },
         json : bodyPayload
     };
@@ -140,7 +86,7 @@ async function getNewOrder(bodyPayload) {
                 reject(err);
             } else {
                 console.log("Get Orders response : ", body );
-                resolve( body )
+                resolve(body);
             }
         });
     });
@@ -152,7 +98,7 @@ async function postNewOrder(bodyPayload) {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json',
-            'Authorization': `Basic ${process.env.MALEOD_API_TOKEN}`
+            'Authorization': `Bearer ${process.env.MALEOD_API_TOKEN}`
         },
         json : bodyPayload
     };

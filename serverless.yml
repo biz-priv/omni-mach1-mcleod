@@ -54,7 +54,8 @@ layers:
     retain: false
 
 functions:
-  omni_mach_mcleod: ${file(config/functions/mach1McleodLambdaFucntion.yml):function}
+  omni_m1_mcleod_csv_import: ${file(config/functions/mach1McleodCsvImportFucntion.yml):function}
+  omni_m1_mcleod_api: ${file(config/functions/mach1McleodApiFunction.yml):function}
 
 resources:
   Resources: 

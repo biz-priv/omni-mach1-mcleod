@@ -35,7 +35,6 @@ module.exports.handler = async (event, context) => {
 
 }
 
-
 async function parseCSVData(s3Stream) {
     return new Promise( (resolve, reject) => {
         let result = [];

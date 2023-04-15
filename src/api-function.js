@@ -1,5 +1,30 @@
+const AWS = require('aws-sdk');
+const request = require('request');
+const moment = require('moment-timezone');
+const s3 = new AWS.S3({
+    region: 'us-east-1'
+});
+// const csv = require('@fast-csv/parse');
+const csv = require('csvtojson');
+var dynamodb = new AWS.DynamoDB.DocumentClient();
 
+module.exports.handler = async (event, context) => {
+    let unprocessedRecords = await queryUnprocessedRecords()
+    console.log( unprocessedRecords );
+}
 
+async function queryUnprocessedRecords() {
+    let params = {
+        TableName : process.env.MACH1_MALEOD_TABLE,
+        IndexName : "processed-index",
+        KeyConditionExpression: "processed = :processed",
+        ExpressionAttributeValues: {
+            ":processed": 'false'
+        }
+    }
+    let result = await dynamodb.query(params).promise();
+    return result;
+}
 
 async function processRecord( item ) {
     let getOrderPayload = {

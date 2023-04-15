@@ -1,33 +1,57 @@
 const AWS = require('aws-sdk');
 const request = require('request');
 const moment = require('moment-timezone');
-const s3 = new AWS.S3({
-    region: 'us-east-1'
-});
-// const csv = require('@fast-csv/parse');
-const csv = require('csvtojson');
+const { putItem } = require('./shared/dynamodb')
 var dynamodb = new AWS.DynamoDB.DocumentClient();
 
 module.exports.handler = async (event, context) => {
-    let unprocessedRecords = await queryUnprocessedRecords()
+    let unprocessedRecords = await queryUnprocessedRecords();
     console.log( unprocessedRecords );
+
+    let promises = unprocessedRecords.map( item => processRecord(item) );
+    let resultArr =  await Promise.all( promises );
+    console.log( "Promise All Result", resultArr );
 }
 
 async function queryUnprocessedRecords() {
     let params = {
         TableName : process.env.MACH1_MALEOD_TABLE,
         IndexName : "processed-index",
-        KeyConditionExpression: "processed = :processed",
+        KeyConditionExpression: "#processedAttribute = :processedValue",
+        ExpressionAttributeNames: {
+            "#processedAttribute": "processed"
+        },
         ExpressionAttributeValues: {
-            ":processed": 'false'
+            ":processedValue": 'false'
         }
     }
     let result = await dynamodb.query(params).promise();
-    return result;
+    return result.Items;
 }
 
 async function processRecord( item ) {
-    let getOrderPayload = {
+    let promiseResponse = {
+        success : false,
+        itemId : item.CONSOL_NBR
+    }
+    try {
+        let getOrderPayload = generatePayloadForGetNewOrder(item)
+        let orderDetails = await getNewOrder(getOrderPayload);
+
+        let createNewOrderPayload = generatePayloadForCreateOrder( orderDetails, item );
+        await postNewOrder(createNewOrderPayload);
+
+        await putItem( process.env.MACH1_MALEOD_TABLE, { CONSOL_NBR : item.CONSOL_NBR, processed : 'true' } );
+        promiseResponse.success = true;
+    } catch( e ) {
+        console.log( `Error for ${item.CONSOL_NBR}`, e )
+    }
+
+    return promiseResponse;
+}
+
+function generatePayloadForGetNewOrder(item) {
+    return {
         "__name": "orders",
         "company_id": "TMS",
         "stops": [{
@@ -47,7 +71,34 @@ async function processRecord( item ) {
             "order_sequence": 2
         }]
     }
-    let orderDetails = await getNewOrder(getOrderPayload);
+}
+
+async function getNewOrder(bodyPayload) {
+    process.env["NODE_TLS_REJECT_UNAUTHORIZED"] = 0;
+    let options = {
+        uri: process.env.MALEOD_API_ENDPOINT + "new",
+        method: 'GET',
+        headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${process.env.MALEOD_API_TOKEN}`
+        },
+        json : bodyPayload
+    };
+    return new Promise((resolve, reject) => {
+        request(options, function (err, data, body) {
+            if (err) {
+                console.log("Error", err);
+                reject(err);
+            } else {
+                console.log("Get Orders response : ", body );
+                resolve(body);
+            }
+        });
+    });
+}
+
+function generatePayloadForCreateOrder(getOrderResponse, item) {
+    let orderDetails = { ...getOrderResponse };
 
     orderDetails.blnum = item.CONSOL_NBR;
     orderDetails.collection_method = "P";
@@ -82,7 +133,7 @@ async function processRecord( item ) {
         "__type": "freight_group_item",
         "__name": "freightGroupItems",
         "company_id": "TMS",
-        "add_timestamp": "20230228151300-0600",
+        "add_timestamp": moment().format('YYYYMMDDHHmmssZZ'),
         "add_userid": "lmeadm",
         "fgi_sequence_nbr": 1,
         "handling_units": item.SHIP_COUNT,
@@ -91,30 +142,6 @@ async function processRecord( item ) {
         "weight": item.CHARGEABLE_WEIGHT,
         "weight_uom_type_code": "LBS"
     }
-}
-
-async function getNewOrder(bodyPayload) {
-    process.env["NODE_TLS_REJECT_UNAUTHORIZED"] = 0;
-    let options = {
-        uri: process.env.MALEOD_API_ENDPOINT + "new",
-        method: 'GET',
-        headers: {
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ${process.env.MALEOD_API_TOKEN}`
-        },
-        json : bodyPayload
-    };
-    return new Promise((resolve, reject) => {
-        request(options, function (err, data, body) {
-            if (err) {
-                console.log("Error", err);
-                reject(err);
-            } else {
-                console.log("Get Orders response : ", body );
-                resolve(body);
-            }
-        });
-    });
 }
 
 async function postNewOrder(bodyPayload) {

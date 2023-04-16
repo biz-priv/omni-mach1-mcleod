@@ -39,6 +39,7 @@ async function processRecord( item ) {
         let orderDetails = await getNewOrder(getOrderPayload);
 
         let createNewOrderPayload = generatePayloadForCreateOrder( orderDetails, item );
+        console.log("Create Order Payload", createNewOrderPayload);
         await postNewOrder(createNewOrderPayload);
 
         await putItem( process.env.MACH1_MALEOD_TABLE, { ...item, processed : 'true' } );
@@ -91,7 +92,11 @@ async function getNewOrder(bodyPayload) {
                 reject(err);
             } else {
                 console.log("Get Orders response : ", body );
-                resolve(body);
+                if (data.statusCode >= 200 && data.statusCode < 300) {
+                    resolve(body);
+                } else {
+                    reject(body);
+                }
             }
         });
     });
@@ -111,15 +116,15 @@ function generatePayloadForCreateOrder(getOrderResponse, item) {
     orderDetails.stops[0].state = item.ORIGIN_ST;
     orderDetails.stops[0].location_id = item.ORIGIN_LOC_ID;
     orderDetails.stops[0].order_sequence = 1;
-    orderDetails.stops[0].sched_arrive_early = item.ETA;
-    orderDetails.stops[0].sched_arrive_late = item.ETA;
+    orderDetails.stops[0].sched_arrive_early = moment(item.ETA).format('YYYYMMDDHHmmssZZ');
+    orderDetails.stops[0].sched_arrive_late = moment(item.ETA).format('YYYYMMDDHHmmssZZ');
 
     orderDetails.stops[1].city = item.DESTINATION_CITY;
     orderDetails.stops[1].state = item.DESTINATION_ST;
     orderDetails.stops[1].location_id = item.DESTINATION_LOC_ID;
     orderDetails.stops[1].order_sequence = 2;
-    orderDetails.stops[1].sched_arrive_early = item.ETA;
-    orderDetails.stops[1].sched_arrive_late = item.ETA;
+    orderDetails.stops[1].sched_arrive_early = moment(item.ETA).format('YYYYMMDDHHmmssZZ');
+    orderDetails.stops[1].sched_arrive_late = moment(item.ETA).format('YYYYMMDDHHmmssZZ');
 
     orderDetails.freightGroup.pro_nbr = item.CONSOL_NBR;
     orderDetails.freightGroup.total_chargeable_weight = item.CHARGEABLE_WEIGHT;
@@ -142,12 +147,14 @@ function generatePayloadForCreateOrder(getOrderResponse, item) {
         "weight": item.CHARGEABLE_WEIGHT,
         "weight_uom_type_code": "LBS"
     }];
+    
+    return orderDetails;
 }
 
 async function postNewOrder(bodyPayload) {
     let options = {
         uri: process.env.MALEOD_API_ENDPOINT + "create",
-        method: 'POST',
+        method: 'PUT',
         headers: {
             'Content-Type': 'application/json',
             'Authorization': `Bearer ${process.env.MALEOD_API_TOKEN}`
@@ -160,8 +167,13 @@ async function postNewOrder(bodyPayload) {
                 console.log("Error", err);
                 reject(err);
             } else {
-                console.log( body );
-                resolve( body )
+                console.log( "Create Order Response", body );
+                console.log( "Create Order Status Code", data.statusCode );
+                if (data.statusCode >= 200 && data.statusCode < 300) {
+                    resolve(body);
+                } else {
+                    reject(body);
+                }
             }
         });
     });

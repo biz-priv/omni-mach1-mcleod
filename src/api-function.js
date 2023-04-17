@@ -35,13 +35,42 @@ async function processRecord( item ) {
         itemId : item.CONSOL_NBR
     }
     try {
-        let getOrderPayload = generatePayloadForGetNewOrder(item)
-        let orderDetails = await getNewOrder(getOrderPayload);
+        let getNewOrderPayload = generatePayloadForGetNewOrder(item)
+        let getNewOrderResponse = await getNewOrder(getNewOrderPayload);
+
+        let logObj = {
+            CONSOL_NBR : item.CONSOL_NBR,
+            request_json : getNewOrderPayload,
+            response_json : getNewOrderResponse,
+            api_status_code : getNewOrderResponse.statusCode,
+            api_endpoint : "GET ORDER",
+            inserted_time_stamp : moment.tz("America/Chicago").format("YYYY-MM-DD HH:mm:ss").toString()
+        }
+        await putItem(process.env.MALEOD_API_LOG_TABLE, logObj);
+
+        if ( getNewOrderResponse.statusCode < 200 || getNewOrderResponse.statusCode >= 300 ) {
+            console.log( `Error for ${item.CONSOL_NBR}`, getNewOrderResponse.body );
+            return processRecord;   
+        }
 
         let createNewOrderPayload = generatePayloadForCreateOrder( orderDetails, item );
-        console.log("Create Order Payload", createNewOrderPayload);
-        await postNewOrder(createNewOrderPayload);
+        let createNewOrderResponse = await postNewOrder(createNewOrderPayload);
 
+        logObj = {
+            CONSOL_NBR : item.CONSOL_NBR,
+            request_json : createNewOrderPayload,
+            response_json : createNewOrderResponse,
+            api_status_code : getNewOrderResponse.statusCode,
+            api_endpoint : "PUT ORDER",
+            inserted_time_stamp : moment.tz("America/Chicago").format("YYYY-MM-DD HH:mm:ss").toString()
+        }
+        await putItem(process.env.MALEOD_API_LOG_TABLE, logObj);;
+
+        if ( createNewOrderResponse.statusCode < 200 || createNewOrderResponse.statusCode >= 300 ) {
+            console.log( `Error for ${item.CONSOL_NBR}`, createNewOrderResponse.body );
+            return processRecord;   
+        }
+    
         await putItem( process.env.MACH1_MALEOD_TABLE, { ...item, processed : 'true' } );
         promiseResponse.success = true;
     } catch( e ) {
@@ -92,11 +121,13 @@ async function getNewOrder(bodyPayload) {
                 reject(err);
             } else {
                 console.log("Get Orders response : ", body );
-                if (data.statusCode >= 200 && data.statusCode < 300) {
-                    resolve(body);
-                } else {
-                    reject(body);
-                }
+                resolve({ statusCode : data.statusCode, body });
+
+                // if (data.statusCode >= 200 && data.statusCode < 300) {
+                //     resolve(body);
+                // } else {
+                //     reject(body);
+                // }
             }
         });
     });
@@ -169,11 +200,12 @@ async function postNewOrder(bodyPayload) {
             } else {
                 console.log( "Create Order Response", body );
                 console.log( "Create Order Status Code", data.statusCode );
-                if (data.statusCode >= 200 && data.statusCode < 300) {
-                    resolve(body);
-                } else {
-                    reject(body);
-                }
+                resolve({ statusCode : data.statusCode, body });
+                // if (data.statusCode >= 200 && data.statusCode < 300) {
+                //     resolve(body);
+                // } else {
+                //     reject(body);
+                // }
             }
         });
     });

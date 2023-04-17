@@ -1,7 +1,8 @@
 const AWS = require('aws-sdk');
 const request = require('request');
 const moment = require('moment-timezone');
-const { putItem } = require('./shared/dynamodb')
+const { putItem } = require('./shared/dynamodb');
+const { v4: uuidv4 } = require("uuid");
 var dynamodb = new AWS.DynamoDB.DocumentClient();
 
 module.exports.handler = async (event, context) => {
@@ -39,6 +40,7 @@ async function processRecord( item ) {
         let getNewOrderResponse = await getNewOrder(getNewOrderPayload);
 
         let logObj = {
+            id: uuidv4(),
             CONSOL_NBR : item.CONSOL_NBR,
             request_json : getNewOrderPayload,
             response_json : getNewOrderResponse,
@@ -57,6 +59,7 @@ async function processRecord( item ) {
         let createNewOrderResponse = await postNewOrder(createNewOrderPayload);
 
         logObj = {
+            id: uuidv4(),
             CONSOL_NBR : item.CONSOL_NBR,
             request_json : createNewOrderPayload,
             response_json : createNewOrderResponse,
@@ -122,12 +125,6 @@ async function getNewOrder(bodyPayload) {
             } else {
                 console.log("Get Orders response : ", body );
                 resolve({ statusCode : data.statusCode, body });
-
-                // if (data.statusCode >= 200 && data.statusCode < 300) {
-                //     resolve(body);
-                // } else {
-                //     reject(body);
-                // }
             }
         });
     });
@@ -201,11 +198,6 @@ async function postNewOrder(bodyPayload) {
                 console.log( "Create Order Response", body );
                 console.log( "Create Order Status Code", data.statusCode );
                 resolve({ statusCode : data.statusCode, body });
-                // if (data.statusCode >= 200 && data.statusCode < 300) {
-                //     resolve(body);
-                // } else {
-                //     reject(body);
-                // }
             }
         });
     });

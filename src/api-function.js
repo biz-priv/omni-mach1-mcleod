@@ -55,7 +55,7 @@ async function processRecord( item ) {
             return processRecord;   
         }
 
-        let createNewOrderPayload = generatePayloadForCreateOrder( orderDetails, item );
+        let createNewOrderPayload = generatePayloadForCreateOrder( getNewOrderResponse, item );
         let createNewOrderResponse = await postNewOrder(createNewOrderPayload);
 
         logObj = {

@@ -1,8 +1,9 @@
 const AWS = require('aws-sdk');
 const request = require('request');
 const moment = require('moment-timezone');
-const { putItem } = require('./shared/dynamodb');
+const { putItem, updateItem } = require('./shared/dynamodb');
 const { v4: uuidv4 } = require("uuid");
+const { getTimeZonePort } = require('./shared/helper');
 var dynamodb = new AWS.DynamoDB.DocumentClient();
 
 module.exports.handler = async (event, context) => {
@@ -36,6 +37,12 @@ async function processRecord( item ) {
         itemId : item.CONSOL_NBR
     }
     try {
+
+        //TODO - Check if ShipmentCount > 0 and mcleod id is empty, don't process
+        //TODO - Check if ShipmentCount > 0 and mcleod id is empty, call create, and update the process flag
+        //TODO - Check if ShipmentCount > 0 and mcleod id is not empty, call update, and update the process flag
+        //TODO - ShipmentCount > 0 and mcleod id is not empty, call the void api, and update the process flag
+
         let getNewOrderPayload = generatePayloadForGetNewOrder(item)
         let getNewOrderResponse = await getNewOrder(getNewOrderPayload);
 
@@ -52,10 +59,10 @@ async function processRecord( item ) {
 
         if ( getNewOrderResponse.statusCode < 200 || getNewOrderResponse.statusCode >= 300 ) {
             console.log( `Error for ${item.CONSOL_NBR}`, getNewOrderResponse.body );
-            return processRecord;   
+            return promiseResponse;   
         }
 
-        let createNewOrderPayload = generatePayloadForCreateOrder( getNewOrderResponse, item );
+        let createNewOrderPayload = await generatePayloadForCreateOrder( getNewOrderResponse, item );
         let createNewOrderResponse = await postNewOrder(createNewOrderPayload);
 
         logObj = {
@@ -71,10 +78,11 @@ async function processRecord( item ) {
 
         if ( createNewOrderResponse.statusCode < 200 || createNewOrderResponse.statusCode >= 300 ) {
             console.log( `Error for ${item.CONSOL_NBR}`, createNewOrderResponse.body );
-            return processRecord;   
+            return promiseResponse;   
         }
     
-        await putItem( process.env.MACH1_MALEOD_TABLE, { ...item, processed : 'true' } );
+        await markRecordAsProcessed(item.CONSOL_NBR, createNewOrderResponse.body.id)
+        // await putItem( process.env.MACH1_MALEOD_TABLE, { ...item, processed : 'true' } );
         promiseResponse.success = true;
     } catch( e ) {
         console.log( `Error for ${item.CONSOL_NBR}`, e )
@@ -130,7 +138,7 @@ async function getNewOrder(bodyPayload) {
     });
 }
 
-function generatePayloadForCreateOrder(getOrderResponse, item) {
+async function generatePayloadForCreateOrder(getOrderResponse, item) {
     let orderDetails = { ...getOrderResponse };
 
     orderDetails.blnum = item.CONSOL_NBR;
@@ -140,19 +148,29 @@ function generatePayloadForCreateOrder(getOrderResponse, item) {
     orderDetails.pieces = item.PACKS;
     orderDetails.weight = item.CHARGEABLE_WEIGHT;
 
-    orderDetails.stops[0].city = item.ORIGIN_CITY;
-    orderDetails.stops[0].state = item.ORIGIN_ST;
-    orderDetails.stops[0].location_id = item.ORIGIN_LOC_ID;
-    orderDetails.stops[0].order_sequence = 1;
-    orderDetails.stops[0].sched_arrive_early = moment(item.ETD).format('YYYYMMDDHHmmssZZ');
-    orderDetails.stops[0].sched_arrive_late = moment(item.ETD).format('YYYYMMDDHHmmssZZ');
+    if ( item.ORIGIN_PORT ) {
+        let originTimeZone = await getTimeZonePort(item.ORIGIN_PORT.substring(2));
+        if ( originTimeZone ) {
+            orderDetails.stops[0].city = item.ORIGIN_CITY;
+            orderDetails.stops[0].state = item.ORIGIN_ST;
+            orderDetails.stops[0].location_id = item.ORIGIN_LOC_ID;
+            orderDetails.stops[0].order_sequence = 1;
+            orderDetails.stops[0].sched_arrive_early = moment.tz(item.ETD, originTimeZone.TzTimeZone).format( 'YYYYMMDDHHmmssZZ');
+            orderDetails.stops[0].sched_arrive_late = moment.tx(item.ETD, originTimeZone.TzTimeZone).format('YYYYMMDDHHmmssZZ');
+        }
+    }
 
-    orderDetails.stops[1].city = item.DESTINATION_CITY;
-    orderDetails.stops[1].state = item.DESTINATION_ST;
-    orderDetails.stops[1].location_id = item.DESTINATION_LOC_ID;
-    orderDetails.stops[1].order_sequence = 2;
-    orderDetails.stops[1].sched_arrive_early = moment(item.ETA).format('YYYYMMDDHHmmssZZ');
-    orderDetails.stops[1].sched_arrive_late = moment(item.ETA).format('YYYYMMDDHHmmssZZ');
+    if ( item.DESTINATION_PORT ) {
+        let destTimeZone = await getTimeZonePort(item.DESTINATION_PORT.substring(2));
+        if ( destTimeZone ) {
+            orderDetails.stops[1].city = item.DESTINATION_CITY;
+            orderDetails.stops[1].state = item.DESTINATION_ST;
+            orderDetails.stops[1].location_id = item.DESTINATION_LOC_ID;
+            orderDetails.stops[1].order_sequence = 2;
+            orderDetails.stops[0].sched_arrive_early = moment.tz(item.ETA, destTimeZone.TzTimeZone).format( 'YYYYMMDDHHmmssZZ');
+            orderDetails.stops[0].sched_arrive_late = moment.tx(item.ETA, destTimeZone.TzTimeZone).format('YYYYMMDDHHmmssZZ');
+        }
+    }
 
     orderDetails.freightGroup.pro_nbr = item.CONSOL_NBR;
     orderDetails.freightGroup.total_chargeable_weight = item.CHARGEABLE_WEIGHT;
@@ -201,4 +219,23 @@ async function postNewOrder(bodyPayload) {
             }
         });
     });
+}
+
+async function markRecordAsProcessed(CONSOL_NBR, mcleodId = null ) {
+    let attributes = {
+        ":processed": true,
+        ":dateUpdated": moment().toISOString()
+    }
+    if ( mcleodId ) {
+        attributes[":mcleodId"] = mcleodId
+    }
+    let params = {
+        TableName: process.env.MACH1_MALEOD_TABLE,
+        Key: {
+            CONSOL_NBR: CONSOL_NBR
+        },
+        UpdateExpression: `set processed = :processed ${ mcleodId ? ', mcleodId= :mcleodId' : '' } `,
+        ExpressionAttributeValues: attributes
+    }
+    await updateItem(params);
 }

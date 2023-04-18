@@ -25,7 +25,18 @@ async function getItem(params){
     }
 }
 
+async function updateItem(params){
+  try {
+    var updateItem = await dynamodb.update(params).promise();
+    return (updateItem);
+  } catch (error) {
+    console.log("Error in getting item:", error);
+    return null;
+  }
+}
+
 module.exports = {
     getItem,
-    putItem
+    putItem,
+    updateItem
 };

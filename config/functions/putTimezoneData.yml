@@ -1,0 +1,12 @@
+function:
+  name: put-timezone-data
+  handler: src/put-timezone-data.handler
+  description: put-timezone-data
+  package:
+    patterns:
+      - "!**/*"
+      - "src/put-timezone-data.js"
+      - "src/shared/**"
+  runtime: nodejs14.x
+  layers:
+    - { Ref: OmniMach1McleodLayerLambdaLayer }

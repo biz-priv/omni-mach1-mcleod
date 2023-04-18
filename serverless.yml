@@ -56,6 +56,8 @@ layers:
 functions:
   omni_m1_mcleod_csv_import: ${file(config/functions/mach1McleodCsvImportFucntion.yml):function}
   omni_m1_mcleod_api: ${file(config/functions/mach1McleodApiFunction.yml):function}
+  put_timezone_data: ${file(config/functions/putTimezoneData.yml):function}
+  
 
 resources:
   Resources: 

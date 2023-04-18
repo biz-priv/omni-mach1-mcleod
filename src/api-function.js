@@ -144,8 +144,8 @@ function generatePayloadForCreateOrder(getOrderResponse, item) {
     orderDetails.stops[0].state = item.ORIGIN_ST;
     orderDetails.stops[0].location_id = item.ORIGIN_LOC_ID;
     orderDetails.stops[0].order_sequence = 1;
-    orderDetails.stops[0].sched_arrive_early = moment(item.ETA).format('YYYYMMDDHHmmssZZ');
-    orderDetails.stops[0].sched_arrive_late = moment(item.ETA).format('YYYYMMDDHHmmssZZ');
+    orderDetails.stops[0].sched_arrive_early = moment(item.ETD).format('YYYYMMDDHHmmssZZ');
+    orderDetails.stops[0].sched_arrive_late = moment(item.ETD).format('YYYYMMDDHHmmssZZ');
 
     orderDetails.stops[1].city = item.DESTINATION_CITY;
     orderDetails.stops[1].state = item.DESTINATION_ST;
@@ -156,9 +156,9 @@ function generatePayloadForCreateOrder(getOrderResponse, item) {
 
     orderDetails.freightGroup.pro_nbr = item.CONSOL_NBR;
     orderDetails.freightGroup.total_chargeable_weight = item.CHARGEABLE_WEIGHT;
-    orderDetails.freightGroup.total_handling_units = item.SHIP_COUNT;
+    orderDetails.freightGroup.total_handling_units = item.PACKS;
     orderDetails.freightGroup.total_pieces = item.PACKS;
-    orderDetails.freightGroup.total_req_spots = item.SHIP_COUNT;
+    orderDetails.freightGroup.total_req_spots = item.PACKS;
     orderDetails.freightGroup.total_weight = item.CHARGEABLE_WEIGHT;
     orderDetails.freightGroup.weight_uom_type_code = "LBS";
 
@@ -169,9 +169,9 @@ function generatePayloadForCreateOrder(getOrderResponse, item) {
         "add_timestamp": moment().format('YYYYMMDDHHmmssZZ'),
         "add_userid": "lmeadm",
         "fgi_sequence_nbr": 1,
-        "handling_units": item.SHIP_COUNT,
+        "handling_units": item.PACKS,
         "pieces": item.PACKS,
-        "req_spots": item.SHIP_COUNT,
+        "req_spots": item.PACKS,
         "weight": item.CHARGEABLE_WEIGHT,
         "weight_uom_type_code": "LBS"
     }];

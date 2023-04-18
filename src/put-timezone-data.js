@@ -19,8 +19,8 @@ module.exports.handler = async (event, context) => {
     console.log("resultArr[0]:", JSON.stringify(resultArr[0]));
 
 
-    // let promises = resultArr.map( item => putItem("omni-wt-rt-airport-timezone", item) );
-    // await Promise.all(promises);
+    let promises = resultArr.map( item => putItem("omni-wt-rt-airport-timezone", item) );
+    await Promise.all(promises);
 
 }
 
@@ -30,6 +30,7 @@ async function parseCSVData(s3Stream) {
         csv()
             .fromStream(s3Stream)
             .on("data", (data) => {
+                const obj = JSON.parse(data.toString('utf8'));
                 result.push(obj);
             })
             .on("end", () => {

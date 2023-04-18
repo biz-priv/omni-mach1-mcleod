@@ -8,5 +8,6 @@ function:
       - "src/put-timezone-data.js"
       - "src/shared/**"
   runtime: nodejs14.x
+  timeout: 60
   layers:
     - { Ref: OmniMach1McleodLayerLambdaLayer }

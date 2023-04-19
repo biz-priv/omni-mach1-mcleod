@@ -4,7 +4,7 @@ const s3 = new AWS.S3({
     region: 'us-east-1'
 });
 const csv = require('csvtojson');
-var dynamodb = new AWS.DynamoDB.DocumentClient();
+const { getItem, putItem} = require('./shared/dynamodb');
 
 const csv_headers = ["source_system","CONSOL_NBR","ORIGIN_PORT","ORIGIN_CITY","ORIGIN_ST","ORIGIN_LOC_ID",
     "DESTINATION_PORT","DESTINATION_CITY","DESTINATION_ST","DESTINATION_LOC_ID","carrier","CARRIER_BOOKING_RREF",
@@ -28,7 +28,7 @@ module.exports.handler = async (event, context) => {
     let resultArr = await parseCSVData(s3Stream);
     console.log("resultArr:", JSON.stringify(resultArr));
 
-    let promises = resultArr.map( (item) => putItem({...item, record_processed : 'false', insertedTimeStamp : moment().format()}) );
+    let promises = resultArr.map( (item) => addRecordToDb(item) );
     await Promise.all(promises);
 
 }
@@ -50,12 +50,31 @@ async function parseCSVData(s3Stream) {
     });
 }
 
-async function putItem(item) {
-    let params = {
-        TableName: process.env.MACH1_MALEOD_TABLE,
-        Item: item,
-        ConditionExpression: 'attribute_not_exists(CONSOL_NBR)'
-    };
-    return await dynamodb.put(params).promise();
-}
+async function addRecordToDb(item) {
+    let promiseResponse = {
+        success : false,
+        itemId : item.CONSOL_NBR
+    }
+    try {
+        let params = {
+            "TableName": process.env.MACH1_MALEOD_TABLE,
+            "Key": {
+                "CONSOL_NBR": item.CONSOL_NBR
+            }
+        }
+        let existingResord = await getItem(params);
 
+        item.record_processed = 'false';
+        item.insertedTimeStamp = moment().format();
+
+        if ( existingResord.Item ) {
+            item.mcleodId = existingResord.Item.mcleodId;
+        }
+
+        await putItem(process.env.MACH1_MALEOD_TABLE, item);
+        promiseResponse.success = true;
+    } catch( e ) {
+        console.log( `Error for ${item.CONSOL_NBR}`, e )
+    }
+    return promiseResponse;
+}

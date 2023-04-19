@@ -1,7 +1,7 @@
-Mach1McleodDynamoTable:
+M1McleodDynamoTable:
   Type: AWS::DynamoDB::Table
   Properties:
-    TableName: omni-mach1-mcleod-${self:provider.stage}
+    TableName: omni-mach1-mcleod-records-${self:provider.stage}
     BillingMode: PAY_PER_REQUEST
     AttributeDefinitions:
       - AttributeName: "CONSOL_NBR"

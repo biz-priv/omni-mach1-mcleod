@@ -61,7 +61,7 @@ resources:
   Resources: 
     Mach1McleodUpdateQueue: ${file(config/sqs/mach1McleodUpdateQueue.yml):Mach1McleodUpdateQueue}
     Mach1McleodUdpateQueuePolicy: ${file(config/sqs/mach1McleodUpdateQueue.yml):Mach1McleodUdpateQueuePolicy}
-    M1McleodDynamoTable: ${file(config/dynamodb/mach1McleodDynamoTable.yml):Mach1McleodDynamoTable}
+    M1McleodDynamoTable: ${file(config/dynamodb/mach1McleodDynamoTable.yml):M1McleodDynamoTable}
     McleodApiLogTable: ${file(config/dynamodb/mcleodApiLogTable.yml):McleodApiLogTable}
 
 

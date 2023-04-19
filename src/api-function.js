@@ -93,19 +93,20 @@ async function processRecord( item ) {
                     return promiseResponse;   
                 }
                 
-                console.log("getOrderByIdResponse", JSON.stringify(getOrderByIdResponse));
-                // let createNewOrderPayload = await generatePayloadForCreateOrder( getNewOrderResponse.body, item );
-                // let createNewOrderResponse = await postNewOrder(createNewOrderPayload);
-        
-                // await addAPILogs( item.CONSOL_NBR, "PUT NEW ORDER", createNewOrderPayload, createNewOrderResponse.statusCode, createNewOrderResponse.body );
-        
-                // if ( createNewOrderResponse.statusCode < 200 || createNewOrderResponse.statusCode >= 300 ) {
-                //     console.log( `Error for ${item.CONSOL_NBR}`, createNewOrderResponse.body );
-                //     return promiseResponse;   
-                // }
-            
-                // await markRecordAsProcessed(item.CONSOL_NBR, createNewOrderResponse.body.id);
+                let updateOrderPayload = getOrderByIdResponse.body;
+                updateOrderPayload.stops = [ updateOrderPayload.stops[0], updateOrderPayload.stops[5] ];
+                updateOrderPayload = await generatePayloadForCreateOrder( updateOrderPayload, item );
 
+                let updateOrderResponse = await updateOrder(updateOrderPayload);
+        
+                await addAPILogs( item.CONSOL_NBR, "PUT UPDATE ORDER", updateOrderPayload, updateOrderResponse.statusCode, updateOrderResponse.body );
+        
+                if ( updateOrderResponse.statusCode < 200 || updateOrderResponse.statusCode >= 300 ) {
+                    console.log( `Error for ${item.CONSOL_NBR}`, createNewOrderResponse.body );
+                    return promiseResponse;   
+                }
+            
+                await markRecordAsProcessed(item.CONSOL_NBR);
             }
         }
 
@@ -161,6 +162,16 @@ async function generatePayloadForCreateOrder(getOrderResponse, item) {
             orderDetails.stops[0].order_sequence = 1;
             orderDetails.stops[0].sched_arrive_early = moment.tz(item.ETD, originTimeZone.TzTimeZone).format( 'YYYYMMDDHHmmssZZ');
             orderDetails.stops[0].sched_arrive_late = moment.tz(item.ETD, originTimeZone.TzTimeZone).format('YYYYMMDDHHmmssZZ');
+            delete orderDetails.stops[0].__statusDescr
+            delete orderDetails.stops[0].__typeDescr
+            delete orderDetails.stops[0].__loadUnloadDescr
+            delete orderDetails.stops[0].__zoneDescr
+            delete orderDetails.stops[0].__timezone
+            delete orderDetails.stops[0].__groupingKey
+            delete orderDetails.stops[0].__operationalStatusDescr
+            delete orderDetails.stops[0].id
+            delete orderDetails.stops[0].txl_uid
+            delete orderDetails.stops[0].zone_id
         }
     }
 
@@ -173,6 +184,16 @@ async function generatePayloadForCreateOrder(getOrderResponse, item) {
             orderDetails.stops[1].order_sequence = 2;
             orderDetails.stops[1].sched_arrive_early = moment.tz(item.ETA, destTimeZone.TzTimeZone).format( 'YYYYMMDDHHmmssZZ');
             orderDetails.stops[1].sched_arrive_late = moment.tz(item.ETA, destTimeZone.TzTimeZone).format('YYYYMMDDHHmmssZZ');
+            delete orderDetails.stops[1].__statusDescr
+            delete orderDetails.stops[1].__typeDescr
+            delete orderDetails.stops[1].__loadUnloadDescr
+            delete orderDetails.stops[1].__zoneDescr
+            delete orderDetails.stops[1].__timezone
+            delete orderDetails.stops[1].__groupingKey
+            delete orderDetails.stops[1].__operationalStatusDescr
+            delete orderDetails.stops[1].id
+            delete orderDetails.stops[1].txl_uid
+            delete orderDetails.stops[1].zone_id
         }
     }
 

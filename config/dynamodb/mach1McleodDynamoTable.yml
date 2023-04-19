@@ -1,4 +1,4 @@
-Mach1McleodDynamoTable:
+M1McleodDynamoTable:
   Type: AWS::DynamoDB::Table
   Properties:
     TableName: omni-mach1-mcleod-${self:provider.stage}

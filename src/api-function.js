@@ -4,6 +4,7 @@ const moment = require('moment-timezone');
 const { putItem, updateItem } = require('./shared/dynamodb');
 const { v4: uuidv4 } = require("uuid");
 const { getTimeZonePort } = require('./shared/helper');
+const { getNewOrder, getOrderById, postNewOrder, updateOrder } = require('./shared/mcleod-api-helper');
 var dynamodb = new AWS.DynamoDB.DocumentClient();
 
 module.exports.handler = async (event, context) => {
@@ -35,51 +36,77 @@ async function processRecord( item ) {
     }
     try {
 
-        //TODO - Check if ShipmentCount > 0 and mcleod id is empty, don't process
+        //TODO - Check if ShipmentCount = 0 and mcleod id is empty, don't process
         //TODO - Check if ShipmentCount > 0 and mcleod id is empty, call create, and update the process flag
         //TODO - Check if ShipmentCount > 0 and mcleod id is not empty, call update, and update the process flag
-        //TODO - ShipmentCount > 0 and mcleod id is not empty, call the void api, and update the process flag
+        //TODO - ShipmentCount = 0 and mcleod id is not empty, call the void api, and update the process flag
 
-        let getNewOrderPayload = generatePayloadForGetNewOrder(item)
-        let getNewOrderResponse = await getNewOrder(getNewOrderPayload);
+        if ( item.SHIP_COUNT == 0 ) {
+            //Case 1 : If SHIP_COUNT = 0 and mcleodId is empty, don't process 
+            if( item.mcleodId == null ) {
+                await markRecordAsProcessed(item.CONSOL_NBR);
+            } 
+            //Case 2 : If SHIP_COUNT = 0 and mcleodId is not empty, call the void api
+            else {
 
-        let logObj = {
-            id: uuidv4(),
-            CONSOL_NBR : item.CONSOL_NBR,
-            request_json : getNewOrderPayload,
-            response_json : getNewOrderResponse,
-            api_status_code : getNewOrderResponse.statusCode,
-            api_endpoint : "GET ORDER",
-            inserted_time_stamp : moment.tz("America/Chicago").format("YYYY-MM-DD HH:mm:ss").toString()
+                await markRecordAsProcessed(item.CONSOL_NBR);
+
+            }
+        } else {
+            //Case 3 : If SHIP_COUNT > 0 and mcleodId is empty, call create api
+            if( item.mcleodId == null ) {
+
+                let getNewOrderPayload = generatePayloadForGetNewOrder(item)
+                let getNewOrderResponse = await getNewOrder(getNewOrderPayload);
+        
+                await addAPILogs( item.CONSOL_NBR, "GET ORDER", getNewOrderPayload, getNewOrderResponse.statusCode, getNewOrderResponse.body );
+        
+                if ( getNewOrderResponse.statusCode < 200 || getNewOrderResponse.statusCode >= 300 ) {
+                    console.log( `Error for ${item.CONSOL_NBR}`, getNewOrderResponse.body );
+                    return promiseResponse;   
+                }
+        
+                let createNewOrderPayload = await generatePayloadForCreateOrder( getNewOrderResponse.body, item );
+                let createNewOrderResponse = await postNewOrder(createNewOrderPayload);
+        
+                await addAPILogs( item.CONSOL_NBR, "PUT NEW ORDER", createNewOrderPayload, createNewOrderResponse.statusCode, createNewOrderResponse.body );
+        
+                if ( createNewOrderResponse.statusCode < 200 || createNewOrderResponse.statusCode >= 300 ) {
+                    console.log( `Error for ${item.CONSOL_NBR}`, createNewOrderResponse.body );
+                    return promiseResponse;   
+                }
+            
+                await markRecordAsProcessed(item.CONSOL_NBR, createNewOrderResponse.body.id);
+
+            } 
+            //Case 4 : If SHIP_COUNT > 0 and mcleodId is not empty, call update api
+            else {
+
+                let getOrderByIdResponse = await getOrderById(item.mcleodId);
+
+                await addAPILogs( item.CONSOL_NBR, "GET ORDER BY ID", { mcleodId : item.mcleodId }, getOrderByIdResponse.statusCode, getOrderByIdResponse.body );
+
+                if ( getOrderByIdResponse.statusCode < 200 || getOrderByIdResponse.statusCode >= 300 ) {
+                    console.log( `Error for ${item.CONSOL_NBR}`, getOrderByIdResponse.body );
+                    return promiseResponse;   
+                }
+                
+                console.log("getOrderByIdResponse", JSON.stringify(getOrderByIdResponse));
+                // let createNewOrderPayload = await generatePayloadForCreateOrder( getNewOrderResponse.body, item );
+                // let createNewOrderResponse = await postNewOrder(createNewOrderPayload);
+        
+                // await addAPILogs( item.CONSOL_NBR, "PUT NEW ORDER", createNewOrderPayload, createNewOrderResponse.statusCode, createNewOrderResponse.body );
+        
+                // if ( createNewOrderResponse.statusCode < 200 || createNewOrderResponse.statusCode >= 300 ) {
+                //     console.log( `Error for ${item.CONSOL_NBR}`, createNewOrderResponse.body );
+                //     return promiseResponse;   
+                // }
+            
+                // await markRecordAsProcessed(item.CONSOL_NBR, createNewOrderResponse.body.id);
+
+            }
         }
-        await putItem(process.env.MALEOD_API_LOG_TABLE, logObj);
 
-        if ( getNewOrderResponse.statusCode < 200 || getNewOrderResponse.statusCode >= 300 ) {
-            console.log( `Error for ${item.CONSOL_NBR}`, getNewOrderResponse.body );
-            return promiseResponse;   
-        }
-
-        let createNewOrderPayload = await generatePayloadForCreateOrder( getNewOrderResponse.body, item );
-        let createNewOrderResponse = await postNewOrder(createNewOrderPayload);
-
-        logObj = {
-            id: uuidv4(),
-            CONSOL_NBR : item.CONSOL_NBR,
-            request_json : createNewOrderPayload,
-            response_json : createNewOrderResponse,
-            api_status_code : getNewOrderResponse.statusCode,
-            api_endpoint : "PUT ORDER",
-            inserted_time_stamp : moment.tz("America/Chicago").format("YYYY-MM-DD HH:mm:ss").toString()
-        }
-        await putItem(process.env.MALEOD_API_LOG_TABLE, logObj);;
-
-        if ( createNewOrderResponse.statusCode < 200 || createNewOrderResponse.statusCode >= 300 ) {
-            console.log( `Error for ${item.CONSOL_NBR}`, createNewOrderResponse.body );
-            return promiseResponse;   
-        }
-    
-        await markRecordAsProcessed(item.CONSOL_NBR, createNewOrderResponse.body.id)
-        // await putItem( process.env.MACH1_MALEOD_TABLE, { ...item, processed : 'true' } );
         promiseResponse.success = true;
     } catch( e ) {
         console.log( `Error for ${item.CONSOL_NBR}`, e )
@@ -87,6 +114,8 @@ async function processRecord( item ) {
 
     return promiseResponse;
 }
+
+
 
 function generatePayloadForGetNewOrder(item) {
     return {
@@ -109,30 +138,6 @@ function generatePayloadForGetNewOrder(item) {
             "order_sequence": 2
         }]
     }
-}
-
-async function getNewOrder(bodyPayload) {
-    process.env["NODE_TLS_REJECT_UNAUTHORIZED"] = 0;
-    let options = {
-        uri: process.env.MALEOD_API_ENDPOINT + "new",
-        method: 'GET',
-        headers: {
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ${process.env.MALEOD_API_TOKEN}`
-        },
-        json : bodyPayload
-    };
-    return new Promise((resolve, reject) => {
-        request(options, function (err, data, body) {
-            if (err) {
-                console.log("Error", err);
-                reject(err);
-            } else {
-                console.log("Get Orders response : ", body );
-                resolve({ statusCode : data.statusCode, body });
-            }
-        });
-    });
 }
 
 async function generatePayloadForCreateOrder(getOrderResponse, item) {
@@ -194,30 +199,6 @@ async function generatePayloadForCreateOrder(getOrderResponse, item) {
     return orderDetails;
 }
 
-async function postNewOrder(bodyPayload) {
-    let options = {
-        uri: process.env.MALEOD_API_ENDPOINT + "create",
-        method: 'PUT',
-        headers: {
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ${process.env.MALEOD_API_TOKEN}`
-        },
-        json : bodyPayload
-    };
-    return new Promise((resolve, reject) => {
-        request(options, function (err, data, body) {
-            if (err) {
-                console.log("Error", err);
-                reject(err);
-            } else {
-                console.log( "Create Order Response", body );
-                console.log( "Create Order Status Code", data.statusCode );
-                resolve({ statusCode : data.statusCode, body });
-            }
-        });
-    });
-}
-
 async function markRecordAsProcessed(CONSOL_NBR, mcleodId = null ) {
     let attributeValues = {
         ":processedValue": "true"
@@ -234,4 +215,17 @@ async function markRecordAsProcessed(CONSOL_NBR, mcleodId = null ) {
         ExpressionAttributeValues: attributeValues
     }
     await updateItem(params);
+}
+
+async function addAPILogs( CONSOL_NBR, apiName, request, statusCode, response ) {
+    let logObj = {
+        id: uuidv4(),
+        CONSOL_NBR : CONSOL_NBR,
+        request_json : request,
+        response_json : response,
+        api_status_code : statusCode,
+        api_endpoint : apiName,
+        inserted_time_stamp : moment.tz("America/Chicago").format("YYYY-MM-DD HH:mm:ss").toString()
+    }
+    await putItem(process.env.MALEOD_API_LOG_TABLE, logObj);
 }

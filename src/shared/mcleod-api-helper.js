@@ -29,6 +29,7 @@ async function getOrderById( orderId ) {
         uri: process.env.MALEOD_API_ENDPOINT + orderId,
         method: 'GET',
         headers: {
+            'Accept' : 'application/json',
             'Content-Type': 'application/json',
             'Authorization': `Bearer ${process.env.MALEOD_API_TOKEN}`
         }

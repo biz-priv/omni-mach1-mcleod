@@ -1,7 +1,16 @@
+Mach1McleodUpdatetDLQ:
+  Type: AWS::SQS::Queue
+  Properties:
+    QueueName: omni-mach1-mcleod-DLQ-${self:provider.stage}
+
 Mach1McleodUpdateQueue:
   Type: AWS::SQS::Queue
   Properties:
     QueueName: omni-mach1-mcleod-queue-${self:provider.stage}
+    VisibilityTimeout: 300
+    RedrivePolicy:
+      deadLetterTargetArn: !GetAtt Mach1McleodUpdatetDLQ.Arn
+      maxReceiveCount: 3
 
 Mach1McleodUdpateQueuePolicy:
   Type: 'AWS::SQS::QueuePolicy'

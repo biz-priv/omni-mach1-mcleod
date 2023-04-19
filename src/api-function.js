@@ -41,21 +41,43 @@ async function processRecord( item ) {
         //TODO - ShipmentCount = 0 and mcleod id is not empty, call the void api, and update the process flag
 
         if ( item.SHIP_COUNT == 0 ) {
-            //Case 1 : If SHIP_COUNT = 0 and mcleodId is empty, don't process 
+            //Case 1 : EMPTY ORDER : If SHIP_COUNT = 0 and mcleodId is empty, don't process 
             if( item.mcleodId == null ) {
                 console.log( `Item - ${item.CONSOL_NBR} - CASE 1` );
                 await markRecordAsProcessed(item.CONSOL_NBR);
             } 
-            //Case 2 : If SHIP_COUNT = 0 and mcleodId is not empty, call the void api
+            //Case 2 : VOID ORDER : If SHIP_COUNT = 0 and mcleodId is not empty, call the void api
             else {
-                console.log( `Item - ${item.CONSOL_NBR} - CASE 2` );
+                console.log( `Item - ${item.CONSOL_NBR} - CASE 2 : VOID ORDER` );
                 await markRecordAsProcessed(item.CONSOL_NBR);
+                let getOrderByIdResponse = await getOrderById(item.mcleodId);
 
+                await addAPILogs( item.CONSOL_NBR, "GET ORDER BY ID", { mcleodId : item.mcleodId }, getOrderByIdResponse.statusCode, getOrderByIdResponse.body );
+
+                if ( getOrderByIdResponse.statusCode < 200 || getOrderByIdResponse.statusCode >= 300 ) {
+                    console.log( `Error for ${item.CONSOL_NBR}`, getOrderByIdResponse.body );
+                    return promiseResponse;   
+                }
+                
+                let voidOrderPayload = JSON.parse(getOrderByIdResponse.body);
+                voidOrderPayload.status = "V";
+                voidOrderPayload.order_type_id = "STD"
+
+                let updateOrderResponse = await updateOrder(updateOrderPayload);
+        
+                await addAPILogs( item.CONSOL_NBR, "PUT UPDATE ORDER", updateOrderPayload, updateOrderResponse.statusCode, updateOrderResponse.body );
+        
+                if ( updateOrderResponse.statusCode < 200 || updateOrderResponse.statusCode >= 300 ) {
+                    console.log( `Error for ${item.CONSOL_NBR}`, createNewOrderResponse.body );
+                    return promiseResponse;   
+                }
+            
+                await markRecordAsProcessed(item.CONSOL_NBR);
             }
         } else {
-            //Case 3 : If SHIP_COUNT > 0 and mcleodId is empty, call create api
+            //Case 3 : NEW ORDER : If SHIP_COUNT > 0 and mcleodId is empty, call create api
             if( item.mcleodId == null ) {
-                console.log( `Item - ${item.CONSOL_NBR} - CASE 3` );
+                console.log( `Item - ${item.CONSOL_NBR} - CASE 3 : NEW ORDER` );
 
                 let getNewOrderPayload = generatePayloadForGetNewOrder(item)
                 let getNewOrderResponse = await getNewOrder(getNewOrderPayload);
@@ -80,9 +102,9 @@ async function processRecord( item ) {
                 await markRecordAsProcessed(item.CONSOL_NBR, createNewOrderResponse.body.id);
 
             } 
-            //Case 4 : If SHIP_COUNT > 0 and mcleodId is not empty, call update api
+            //Case 4 : UPDATE ORDER : If SHIP_COUNT > 0 and mcleodId is not empty, call update api
             else {
-                console.log( `Item - ${item.CONSOL_NBR} - CASE 4` );
+                console.log( `Item - ${item.CONSOL_NBR} - CASE 4 : UPDATE ORDER` );
 
                 let getOrderByIdResponse = await getOrderById(item.mcleodId);
 
@@ -93,7 +115,8 @@ async function processRecord( item ) {
                     return promiseResponse;   
                 }
                 
-                let updateOrderPayload = getOrderByIdResponse.body;
+                let updateOrderPayload = JSON.parse(getOrderByIdResponse.body);
+                updateOrderPayload.order_type_id = "STD"
                 updateOrderPayload.stops = [ updateOrderPayload.stops[0], updateOrderPayload.stops[5] ];
                 updateOrderPayload = await generatePayloadForCreateOrder( updateOrderPayload, item );
 

@@ -1,5 +1,4 @@
 const AWS = require('aws-sdk');
-const request = require('request');
 const moment = require('moment-timezone');
 const { putItem, updateItem } = require('./shared/dynamodb');
 const { v4: uuidv4 } = require("uuid");
@@ -44,17 +43,19 @@ async function processRecord( item ) {
         if ( item.SHIP_COUNT == 0 ) {
             //Case 1 : If SHIP_COUNT = 0 and mcleodId is empty, don't process 
             if( item.mcleodId == null ) {
+                console.log( `Item - ${item.CONSOL_NBR} - CASE 1` );
                 await markRecordAsProcessed(item.CONSOL_NBR);
             } 
             //Case 2 : If SHIP_COUNT = 0 and mcleodId is not empty, call the void api
             else {
-
+                console.log( `Item - ${item.CONSOL_NBR} - CASE 2` );
                 await markRecordAsProcessed(item.CONSOL_NBR);
 
             }
         } else {
             //Case 3 : If SHIP_COUNT > 0 and mcleodId is empty, call create api
             if( item.mcleodId == null ) {
+                console.log( `Item - ${item.CONSOL_NBR} - CASE 3` );
 
                 let getNewOrderPayload = generatePayloadForGetNewOrder(item)
                 let getNewOrderResponse = await getNewOrder(getNewOrderPayload);
@@ -81,6 +82,7 @@ async function processRecord( item ) {
             } 
             //Case 4 : If SHIP_COUNT > 0 and mcleodId is not empty, call update api
             else {
+                console.log( `Item - ${item.CONSOL_NBR} - CASE 4` );
 
                 let getOrderByIdResponse = await getOrderById(item.mcleodId);
 

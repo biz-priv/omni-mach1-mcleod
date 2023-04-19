@@ -1,3 +1,5 @@
+const request = require('request');
+
 async function getNewOrder(bodyPayload) {
     process.env["NODE_TLS_REJECT_UNAUTHORIZED"] = 0;
     let options = {

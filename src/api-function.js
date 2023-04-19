@@ -233,7 +233,7 @@ async function markRecordAsProcessed(CONSOL_NBR, mcleodId = null ) {
         Key: {
             CONSOL_NBR: CONSOL_NBR
         },
-        UpdateExpression: `set processed = :processedValue,  ${ mcleodId ? ', mcleodId= :mcleodIdValue' : '' } `,
+        UpdateExpression: `set processed = :processedValue  ${ mcleodId ? ', mcleodId= :mcleodIdValue' : '' } `,
         ExpressionAttributeValues: attributes
     }
     await updateItem(params);

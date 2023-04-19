@@ -63,12 +63,12 @@ async function processRecord( item ) {
                 voidOrderPayload.status = "V";
                 voidOrderPayload.order_type_id = "STD"
 
-                let updateOrderResponse = await updateOrder(updateOrderPayload);
+                let updateOrderResponse = await updateOrder(voidOrderPayload);
         
-                await addAPILogs( item.CONSOL_NBR, "PUT UPDATE ORDER", updateOrderPayload, updateOrderResponse.statusCode, updateOrderResponse.body );
+                await addAPILogs( item.CONSOL_NBR, "PUT UPDATE ORDER", voidOrderPayload, updateOrderResponse.statusCode, updateOrderResponse.body );
         
                 if ( updateOrderResponse.statusCode < 200 || updateOrderResponse.statusCode >= 300 ) {
-                    console.log( `Error for ${item.CONSOL_NBR}`, createNewOrderResponse.body );
+                    console.log( `Error for ${item.CONSOL_NBR}`, updateOrderResponse.body );
                     return promiseResponse;   
                 }
             
@@ -117,15 +117,31 @@ async function processRecord( item ) {
                 
                 let updateOrderPayload = JSON.parse(getOrderByIdResponse.body);
                 updateOrderPayload.order_type_id = "STD"
+                delete updateOrderPayload.freightGroup.ord_uid;
+                delete updateOrderPayload.freightGroup.ship_plc_uid;
+                delete updateOrderPayload.freightGroup.cons_plc_uid;
+                delete updateOrderPayload.freightGroup.conveyance_owner_plc_uid;
+                delete updateOrderPayload.freightGroup.dest_txl_uid;
+                delete updateOrderPayload.freightGroup.orig_txl_uid;
+                delete updateOrderPayload.freightGroup.fgp_uid;
+                
+                delete updateOrderPayload.movements;
+                
+                delete updateOrderPayload.freightGroup.fgpXBfgs[0].bfg_uid;
+                delete updateOrderPayload.freightGroup.fgpXBfgs[0].fgp_uid;
+                delete updateOrderPayload.freightGroup.fgpXBfgs[0].fxb_uid;
+                
                 updateOrderPayload.stops = [ updateOrderPayload.stops[0], updateOrderPayload.stops[5] ];
                 updateOrderPayload = await generatePayloadForCreateOrder( updateOrderPayload, item );
+
+                console.log("Update Payload", JSON.stringify(updateOrderPayload))
 
                 let updateOrderResponse = await updateOrder(updateOrderPayload);
         
                 await addAPILogs( item.CONSOL_NBR, "PUT UPDATE ORDER", updateOrderPayload, updateOrderResponse.statusCode, updateOrderResponse.body );
         
                 if ( updateOrderResponse.statusCode < 200 || updateOrderResponse.statusCode >= 300 ) {
-                    console.log( `Error for ${item.CONSOL_NBR}`, createNewOrderResponse.body );
+                    console.log( `Error for ${item.CONSOL_NBR}`, updateOrderResponse.body );
                     return promiseResponse;   
                 }
             

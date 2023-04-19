@@ -6,7 +6,7 @@ Mach1McleodDynamoTable:
     AttributeDefinitions:
       - AttributeName: "CONSOL_NBR"
         AttributeType: "S"
-      - AttributeName: "processed"
+      - AttributeName: "record_processed"
         AttributeType: "S"
     KeySchema:
       - AttributeName: "CONSOL_NBR"
@@ -14,7 +14,7 @@ Mach1McleodDynamoTable:
     GlobalSecondaryIndexes:
       - IndexName: processed-index
         KeySchema:
-          - AttributeName: processed
+          - AttributeName: record_processed
             KeyType: HASH
         Projection:
           ProjectionType: 'ALL'

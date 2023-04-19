@@ -19,10 +19,7 @@ async function queryUnprocessedRecords() {
     let params = {
         TableName : process.env.MACH1_MALEOD_TABLE,
         IndexName : "processed-index",
-        KeyConditionExpression: "#processedAttribute = :processedValue",
-        ExpressionAttributeNames: {
-            "#processedAttribute": "processed"
-        },
+        KeyConditionExpression: "record_processed = :processedValue",
         ExpressionAttributeValues: {
             ":processedValue": 'false'
         }
@@ -222,7 +219,8 @@ async function postNewOrder(bodyPayload) {
 }
 
 async function markRecordAsProcessed(CONSOL_NBR, mcleodId = null ) {
-    let attributes = {
+
+    let attributeValues = {
         ":processedValue": true
     }
     if ( mcleodId ) {
@@ -233,8 +231,8 @@ async function markRecordAsProcessed(CONSOL_NBR, mcleodId = null ) {
         Key: {
             CONSOL_NBR: CONSOL_NBR
         },
-        UpdateExpression: `set processed = :processedValue  ${ mcleodId ? ', mcleodId= :mcleodIdValue' : '' } `,
-        ExpressionAttributeValues: attributes
+        UpdateExpression: `set record_processed = :processedValue  ${ mcleodId ? ', mcleodId= :mcleodIdValue' : '' } `,
+        ExpressionAttributeValues: attributeValues
     }
     await updateItem(params);
 }

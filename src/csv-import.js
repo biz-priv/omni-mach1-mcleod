@@ -28,7 +28,7 @@ module.exports.handler = async (event, context) => {
     let resultArr = await parseCSVData(s3Stream);
     console.log("resultArr:", JSON.stringify(resultArr));
 
-    let promises = resultArr.map( (item) => putItem({...item, processed : 'false', insertedTimeStamp : moment().format()}) );
+    let promises = resultArr.map( (item) => putItem({...item, record_processed : 'false', insertedTimeStamp : moment().format()}) );
     await Promise.all(promises);
 
 }

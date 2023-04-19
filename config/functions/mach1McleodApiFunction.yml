@@ -12,6 +12,7 @@ function:
     - { Ref: OmniMach1McleodLayerLambdaLayer }
   events:
     - schedule: rate(15 minutes)
+  timeout: 120
   environment:
     MACH1_MALEOD_TABLE: ${ssm:/omni-mach1-mcleod/${self:provider.stage}/mach1-mcleod/ddb.tableName~true}
     MALEOD_API_LOG_TABLE: ${ssm:/omni-mach1-mcleod/${self:provider.stage}/mcleod-api-plog/ddb.tableName~true}

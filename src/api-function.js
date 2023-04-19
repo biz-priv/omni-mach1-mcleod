@@ -156,7 +156,7 @@ async function generatePayloadForCreateOrder(getOrderResponse, item) {
             orderDetails.stops[0].location_id = item.ORIGIN_LOC_ID;
             orderDetails.stops[0].order_sequence = 1;
             orderDetails.stops[0].sched_arrive_early = moment.tz(item.ETD, originTimeZone.TzTimeZone).format( 'YYYYMMDDHHmmssZZ');
-            orderDetails.stops[0].sched_arrive_late = moment.tx(item.ETD, originTimeZone.TzTimeZone).format('YYYYMMDDHHmmssZZ');
+            orderDetails.stops[0].sched_arrive_late = moment.tz(item.ETD, originTimeZone.TzTimeZone).format('YYYYMMDDHHmmssZZ');
         }
     }
 
@@ -168,7 +168,7 @@ async function generatePayloadForCreateOrder(getOrderResponse, item) {
             orderDetails.stops[1].location_id = item.DESTINATION_LOC_ID;
             orderDetails.stops[1].order_sequence = 2;
             orderDetails.stops[1].sched_arrive_early = moment.tz(item.ETA, destTimeZone.TzTimeZone).format( 'YYYYMMDDHHmmssZZ');
-            orderDetails.stops[1].sched_arrive_late = moment.tx(item.ETA, destTimeZone.TzTimeZone).format('YYYYMMDDHHmmssZZ');
+            orderDetails.stops[1].sched_arrive_late = moment.tz(item.ETA, destTimeZone.TzTimeZone).format('YYYYMMDDHHmmssZZ');
         }
     }
 

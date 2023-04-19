@@ -223,18 +223,17 @@ async function postNewOrder(bodyPayload) {
 
 async function markRecordAsProcessed(CONSOL_NBR, mcleodId = null ) {
     let attributes = {
-        ":processed": true,
-        ":dateUpdated": moment().toISOString()
+        ":processedValue": true
     }
     if ( mcleodId ) {
-        attributes[":mcleodId"] = mcleodId
+        attributes[":mcleodIdValue"] = mcleodId
     }
     let params = {
         TableName: process.env.MACH1_MALEOD_TABLE,
         Key: {
             CONSOL_NBR: CONSOL_NBR
         },
-        UpdateExpression: `set processed = :processed ${ mcleodId ? ', mcleodId= :mcleodId' : '' } `,
+        UpdateExpression: `set processed = :processedValue,  ${ mcleodId ? ', mcleodId= :mcleodIdValue' : '' } `,
         ExpressionAttributeValues: attributes
     }
     await updateItem(params);

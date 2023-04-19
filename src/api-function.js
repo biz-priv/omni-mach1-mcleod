@@ -219,12 +219,11 @@ async function postNewOrder(bodyPayload) {
 }
 
 async function markRecordAsProcessed(CONSOL_NBR, mcleodId = null ) {
-
     let attributeValues = {
-        ":processedValue": true
+        ":processedValue": "true"
     }
     if ( mcleodId ) {
-        attributes[":mcleodIdValue"] = mcleodId
+        attributeValues[":mcleodIdValue"] = mcleodId
     }
     let params = {
         TableName: process.env.MACH1_MALEOD_TABLE,

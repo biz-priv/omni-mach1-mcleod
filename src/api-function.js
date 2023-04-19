@@ -62,7 +62,7 @@ async function processRecord( item ) {
             return promiseResponse;   
         }
 
-        let createNewOrderPayload = await generatePayloadForCreateOrder( getNewOrderResponse, item );
+        let createNewOrderPayload = await generatePayloadForCreateOrder( getNewOrderResponse.body, item );
         let createNewOrderResponse = await postNewOrder(createNewOrderPayload);
 
         logObj = {
@@ -167,8 +167,8 @@ async function generatePayloadForCreateOrder(getOrderResponse, item) {
             orderDetails.stops[1].state = item.DESTINATION_ST;
             orderDetails.stops[1].location_id = item.DESTINATION_LOC_ID;
             orderDetails.stops[1].order_sequence = 2;
-            orderDetails.stops[0].sched_arrive_early = moment.tz(item.ETA, destTimeZone.TzTimeZone).format( 'YYYYMMDDHHmmssZZ');
-            orderDetails.stops[0].sched_arrive_late = moment.tx(item.ETA, destTimeZone.TzTimeZone).format('YYYYMMDDHHmmssZZ');
+            orderDetails.stops[1].sched_arrive_early = moment.tz(item.ETA, destTimeZone.TzTimeZone).format( 'YYYYMMDDHHmmssZZ');
+            orderDetails.stops[1].sched_arrive_late = moment.tx(item.ETA, destTimeZone.TzTimeZone).format('YYYYMMDDHHmmssZZ');
         }
     }
 

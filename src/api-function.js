@@ -115,25 +115,7 @@ async function processRecord( item ) {
                     return promiseResponse;   
                 }
                 
-                let updateOrderPayload = JSON.parse(getOrderByIdResponse.body);
-                updateOrderPayload.order_type_id = "STD"
-                delete updateOrderPayload.freightGroup.ord_uid;
-                delete updateOrderPayload.freightGroup.ship_plc_uid;
-                delete updateOrderPayload.freightGroup.cons_plc_uid;
-                delete updateOrderPayload.freightGroup.conveyance_owner_plc_uid;
-                delete updateOrderPayload.freightGroup.dest_txl_uid;
-                delete updateOrderPayload.freightGroup.orig_txl_uid;
-                delete updateOrderPayload.freightGroup.fgp_uid;
-                
-                delete updateOrderPayload.movements;
-                
-                delete updateOrderPayload.freightGroup.fgpXBfgs[0].bfg_uid;
-                delete updateOrderPayload.freightGroup.fgpXBfgs[0].fgp_uid;
-                delete updateOrderPayload.freightGroup.fgpXBfgs[0].fxb_uid;
-                
-                updateOrderPayload.stops = [ updateOrderPayload.stops[0], updateOrderPayload.stops[5] ];
-                updateOrderPayload = await generatePayloadForCreateOrder( updateOrderPayload, item );
-
+                let updateOrderPayload = await generatePayloadForUpdateOrder(getOrderByIdResponse.body, item);
                 console.log("Update Payload", JSON.stringify(updateOrderPayload))
 
                 let updateOrderResponse = await updateOrder(updateOrderPayload);
@@ -201,16 +183,6 @@ async function generatePayloadForCreateOrder(getOrderResponse, item) {
             orderDetails.stops[0].order_sequence = 1;
             orderDetails.stops[0].sched_arrive_early = moment.tz(item.ETD, originTimeZone.TzTimeZone).format( 'YYYYMMDDHHmmssZZ');
             orderDetails.stops[0].sched_arrive_late = moment.tz(item.ETD, originTimeZone.TzTimeZone).format('YYYYMMDDHHmmssZZ');
-            delete orderDetails.stops[0].__statusDescr
-            delete orderDetails.stops[0].__typeDescr
-            delete orderDetails.stops[0].__loadUnloadDescr
-            delete orderDetails.stops[0].__zoneDescr
-            delete orderDetails.stops[0].__timezone
-            delete orderDetails.stops[0].__groupingKey
-            delete orderDetails.stops[0].__operationalStatusDescr
-            delete orderDetails.stops[0].id
-            delete orderDetails.stops[0].txl_uid
-            delete orderDetails.stops[0].zone_id
         }
     }
 
@@ -223,16 +195,6 @@ async function generatePayloadForCreateOrder(getOrderResponse, item) {
             orderDetails.stops[1].order_sequence = 2;
             orderDetails.stops[1].sched_arrive_early = moment.tz(item.ETA, destTimeZone.TzTimeZone).format( 'YYYYMMDDHHmmssZZ');
             orderDetails.stops[1].sched_arrive_late = moment.tz(item.ETA, destTimeZone.TzTimeZone).format('YYYYMMDDHHmmssZZ');
-            delete orderDetails.stops[1].__statusDescr
-            delete orderDetails.stops[1].__typeDescr
-            delete orderDetails.stops[1].__loadUnloadDescr
-            delete orderDetails.stops[1].__zoneDescr
-            delete orderDetails.stops[1].__timezone
-            delete orderDetails.stops[1].__groupingKey
-            delete orderDetails.stops[1].__operationalStatusDescr
-            delete orderDetails.stops[1].id
-            delete orderDetails.stops[1].txl_uid
-            delete orderDetails.stops[1].zone_id
         }
     }
 
@@ -257,6 +219,53 @@ async function generatePayloadForCreateOrder(getOrderResponse, item) {
         "weight": item.CHARGEABLE_WEIGHT,
         "weight_uom_type_code": "LBS"
     }];
+    
+    return orderDetails;
+}
+
+async function generatePayloadForUpdateOrder(getOrderResponse, item) {
+    let orderDetails = { ...getOrderResponse };
+
+    delete orderDetails.movements;
+    orderDetails.order_type_id = "STD"
+    orderDetails.pallets_how_many = item.PACKS;
+    orderDetails.pieces = item.PACKS;
+    orderDetails.weight = item.CHARGEABLE_WEIGHT;
+
+    if ( item.ORIGIN_PORT ) {
+        let originTimeZone = await getTimeZonePort(item.ORIGIN_PORT.substring(2));
+        if ( originTimeZone ) {
+            orderDetails.stops[0].city = item.ORIGIN_CITY;
+            orderDetails.stops[0].state = item.ORIGIN_ST;
+            orderDetails.stops[0].location_id = item.ORIGIN_LOC_ID;
+            orderDetails.stops[0].order_sequence = 1;
+            orderDetails.stops[0].sched_arrive_early = moment.tz(item.ETD, originTimeZone.TzTimeZone).format( 'YYYYMMDDHHmmssZZ');
+            orderDetails.stops[0].sched_arrive_late = moment.tz(item.ETD, originTimeZone.TzTimeZone).format('YYYYMMDDHHmmssZZ');
+        }
+    }
+
+    if ( item.DESTINATION_PORT ) {
+        let destTimeZone = await getTimeZonePort(item.DESTINATION_PORT.substring(2));
+        if ( destTimeZone ) {
+            orderDetails.stops[5].city = item.DESTINATION_CITY;
+            orderDetails.stops[5].state = item.DESTINATION_ST;
+            orderDetails.stops[5].location_id = item.DESTINATION_LOC_ID;
+            orderDetails.stops[5].order_sequence = 2;
+            orderDetails.stops[5].sched_arrive_early = moment.tz(item.ETA, destTimeZone.TzTimeZone).format( 'YYYYMMDDHHmmssZZ');
+            orderDetails.stops[5].sched_arrive_late = moment.tz(item.ETA, destTimeZone.TzTimeZone).format('YYYYMMDDHHmmssZZ');
+        }
+    }
+
+    orderDetails.freightGroup.total_chargeable_weight = item.CHARGEABLE_WEIGHT;
+    orderDetails.freightGroup.total_handling_units = item.PACKS;
+    orderDetails.freightGroup.total_pieces = item.PACKS;
+    orderDetails.freightGroup.total_req_spots = item.PACKS;
+    orderDetails.freightGroup.total_weight = item.CHARGEABLE_WEIGHT;
+
+    orderDetails.freightGroup.freightGroupItems[0].handling_units = item.PACKS;
+    orderDetails.freightGroup.freightGroupItems[0].pieces = item.PACKS;
+    orderDetails.freightGroup.freightGroupItems[0].req_spots = item.PACKS;
+    orderDetails.freightGroup.freightGroupItems[0].weight = item.CHARGEABLE_WEIGHT;
     
     return orderDetails;
 }

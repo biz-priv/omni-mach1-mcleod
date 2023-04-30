@@ -114,6 +114,8 @@ async function processRecord( item ) {
                     console.log( `Error for ${item.CONSOL_NBR}`, getOrderByIdResponse.body );
                     return promiseResponse;   
                 }
+
+                console.log("Get Orders response : ", getOrderByIdResponse.body );
                 
                 let updateOrderPayload = await generatePayloadForUpdateOrder(getOrderByIdResponse.body, item);
                 console.log("Update Payload", JSON.stringify(updateOrderPayload))
@@ -224,7 +226,7 @@ async function generatePayloadForCreateOrder(getOrderResponse, item) {
 }
 
 async function generatePayloadForUpdateOrder(getOrderResponse, item) {
-    let orderDetails = { ...getOrderResponse };
+    let orderDetails = { ...JSON.parse(getOrderResponse) };
 
     delete orderDetails.movements;
     orderDetails.order_type_id = "STD"

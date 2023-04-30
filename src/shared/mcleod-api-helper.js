@@ -40,7 +40,6 @@ async function getOrderById( orderId ) {
                 console.log("Error", err);
                 reject(err);
             } else {
-                console.log("Get Orders response : ", body );
                 resolve({ statusCode : data.statusCode, body });
             }
         });

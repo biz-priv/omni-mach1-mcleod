@@ -1,0 +1,17 @@
+function:
+  name: omni-m1-mcleod-csv-import-${self:provider.stage}
+  handler: src/csv-import.handler
+  description: Omni Mach1 Mcleod
+  package:
+    patterns:
+      - "!**/*"
+      - "src/csv-import.js"
+      - "src/shared/**"
+  runtime: nodejs14.x
+  layers:
+    - { Ref: OmniMach1McleodLayerLambdaLayer }
+  events:
+    - sqs:
+        arn: !GetAtt Mach1McleodUpdateQueue.Arn
+  environment:
+    MACH1_MALEOD_TABLE: ${ssm:/omni-mach1-mcleod/${self:provider.stage}/mach1-mcleod/ddb.tableName~true}

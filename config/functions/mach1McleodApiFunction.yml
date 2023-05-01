@@ -1,0 +1,26 @@
+function:
+  name: omni-m1-mcleod-api-${self:provider.stage}
+  handler: src/api-function.handler
+  description: Omni Mach1 Mcleod
+  package:
+    patterns:
+      - "!**/*"
+      - "src/api-function.js"
+      - "src/shared/**"
+  runtime: nodejs14.x
+  layers:
+    - { Ref: OmniMach1McleodLayerLambdaLayer }
+  events:
+    - schedule: rate(15 minutes)
+  timeout: 120
+  environment:
+    MACH1_MALEOD_TABLE: ${ssm:/omni-mach1-mcleod/${self:provider.stage}/mach1-mcleod/ddb.tableName~true}
+    MALEOD_API_LOG_TABLE: ${ssm:/omni-mach1-mcleod/${self:provider.stage}/mcleod-api-plog/ddb.tableName~true}
+    MALEOD_API_ENDPOINT: ${ssm:/omni-mach1-mcleod/${self:provider.stage}/mcleod-api-endpoint~true}
+    MALEOD_API_TOKEN: ${ssm:/omni-mach1-mcleod/${self:provider.stage}/mcleod-api-token~true}
+    TIMEZONE_TABLE: ${ssm:/omni-wt-rt/airport-timezone/ddb.tableName~true}
+  vpc:
+    securityGroupIds:
+    - ${ssm:/omni-dw/${self:provider.stage}/lambda/sgId}
+    subnetIds:
+    - ${ssm:/omni-dw/${self:provider.stage}/lambda/subnetA}

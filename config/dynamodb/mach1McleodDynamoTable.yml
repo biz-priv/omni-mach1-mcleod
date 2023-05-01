@@ -1,0 +1,20 @@
+M1McleodDynamoTable:
+  Type: AWS::DynamoDB::Table
+  Properties:
+    TableName: omni-mach1-mcleod-records-${self:provider.stage}
+    BillingMode: PAY_PER_REQUEST
+    AttributeDefinitions:
+      - AttributeName: "CONSOL_NBR"
+        AttributeType: "S"
+      - AttributeName: "record_processed"
+        AttributeType: "S"
+    KeySchema:
+      - AttributeName: "CONSOL_NBR"
+        KeyType: HASH
+    GlobalSecondaryIndexes:
+      - IndexName: processed-index
+        KeySchema:
+          - AttributeName: record_processed
+            KeyType: HASH
+        Projection:
+          ProjectionType: 'ALL'

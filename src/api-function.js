@@ -6,6 +6,12 @@ const { getTimeZonePort } = require('./shared/helper');
 const { getNewOrder, getOrderById, postNewOrder, updateOrder } = require('./shared/mcleod-api-helper');
 var dynamodb = new AWS.DynamoDB.DocumentClient();
 
+const orderTypeIdMapping = {
+    "prod" : "STN",
+    "uat" : "STN",
+    "dev" : "STD"
+}
+
 module.exports.handler = async (event, context) => {
     let unprocessedRecords = await queryUnprocessedRecords();
     console.log( unprocessedRecords );
@@ -34,12 +40,6 @@ async function processRecord( item ) {
         itemId : item.CONSOL_NBR
     }
     try {
-
-        //TODO - Check if ShipmentCount = 0 and mcleod id is empty, don't process
-        //TODO - Check if ShipmentCount > 0 and mcleod id is empty, call create, and update the process flag
-        //TODO - Check if ShipmentCount > 0 and mcleod id is not empty, call update, and update the process flag
-        //TODO - ShipmentCount = 0 and mcleod id is not empty, call the void api, and update the process flag
-
         if ( item.SHIP_COUNT == 0 ) {
             //Case 1 : EMPTY ORDER : If SHIP_COUNT = 0 and mcleodId is empty, don't process 
             if( item.mcleodId == null ) {
@@ -61,7 +61,7 @@ async function processRecord( item ) {
                 
                 let voidOrderPayload = JSON.parse(getOrderByIdResponse.body);
                 voidOrderPayload.status = "V";
-                voidOrderPayload.order_type_id = "STD"
+                voidOrderPayload.order_type_id = orderTypeIdMapping[process.env.API_ENVIRONMENT]
 
                 let updateOrderResponse = await updateOrder(voidOrderPayload);
         
@@ -169,12 +169,15 @@ function generatePayloadForGetNewOrder(item) {
 async function generatePayloadForCreateOrder(getOrderResponse, item) {
     let orderDetails = { ...getOrderResponse };
 
+    orderDetails.order_type_id = orderTypeIdMapping[process.env.API_ENVIRONMENT];
     orderDetails.blnum = item.CONSOL_NBR;
     orderDetails.collection_method = "P";
     orderDetails.customer_id = "MACH1LIN";
     orderDetails.pallets_how_many = item.PACKS;
     orderDetails.pieces = item.PACKS;
     orderDetails.weight = item.CHARGEABLE_WEIGHT;
+    orderDetails.rate_type = "C";
+    orderDetails.rate_unit_desc = "CWT";
 
     if ( item.ORIGIN_PORT ) {
         let originTimeZone = await getTimeZonePort(item.ORIGIN_PORT.substring(2));
@@ -219,7 +222,8 @@ async function generatePayloadForCreateOrder(getOrderResponse, item) {
         "pieces": item.PACKS,
         "req_spots": item.PACKS,
         "weight": item.CHARGEABLE_WEIGHT,
-        "weight_uom_type_code": "LBS"
+        "weight_uom_type_code": "LBS",
+        "nmfc_class_code": "00"
     }];
     
     return orderDetails;
@@ -229,10 +233,12 @@ async function generatePayloadForUpdateOrder(getOrderResponse, item) {
     let orderDetails = { ...JSON.parse(getOrderResponse) };
 
     delete orderDetails.movements;
-    orderDetails.order_type_id = "STD"
+    orderDetails.order_type_id = orderTypeIdMapping[process.env.API_ENVIRONMENT];
     orderDetails.pallets_how_many = item.PACKS;
     orderDetails.pieces = item.PACKS;
     orderDetails.weight = item.CHARGEABLE_WEIGHT;
+    orderDetails.rate_type = "C";
+    orderDetails.rate_unit_desc = "CWT";
 
     if ( item.ORIGIN_PORT ) {
         let originTimeZone = await getTimeZonePort(item.ORIGIN_PORT.substring(2));
@@ -268,7 +274,8 @@ async function generatePayloadForUpdateOrder(getOrderResponse, item) {
     orderDetails.freightGroup.freightGroupItems[0].pieces = item.PACKS;
     orderDetails.freightGroup.freightGroupItems[0].req_spots = item.PACKS;
     orderDetails.freightGroup.freightGroupItems[0].weight = item.CHARGEABLE_WEIGHT;
-    
+    orderDetails.freightGroup.freightGroupItems[0].nmfc_class_code = "00";
+
     return orderDetails;
 }
 

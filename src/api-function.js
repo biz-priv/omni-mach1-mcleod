@@ -263,12 +263,13 @@ async function generatePayloadForUpdateOrder(getOrderResponse, item) {
     if ( item.DESTINATION_PORT ) {
         let destTimeZone = await getTimeZonePort(item.DESTINATION_PORT.substring(2));
         if ( destTimeZone ) {
-            orderDetails.stops[5].city = item.DESTINATION_CITY;
-            orderDetails.stops[5].state = item.DESTINATION_ST;
-            orderDetails.stops[5].location_id = item.DESTINATION_LOC_ID;
-            orderDetails.stops[5].order_sequence = 2;
-            orderDetails.stops[5].sched_arrive_early = moment.tz(item.ETA, destTimeZone.TzTimeZone).format( 'YYYYMMDDHHmmssZZ');
-            orderDetails.stops[5].sched_arrive_late = moment.tz(item.ETA, destTimeZone.TzTimeZone).format('YYYYMMDDHHmmssZZ');
+            let lastIndex = orderDetails.stops.length - 1;
+            orderDetails.stops[lastIndex].city = item.DESTINATION_CITY;
+            orderDetails.stops[lastIndex].state = item.DESTINATION_ST;
+            orderDetails.stops[lastIndex].location_id = item.DESTINATION_LOC_ID;
+            orderDetails.stops[lastIndex].order_sequence = 2;
+            orderDetails.stops[lastIndex].sched_arrive_early = moment.tz(item.ETA, destTimeZone.TzTimeZone).format( 'YYYYMMDDHHmmssZZ');
+            orderDetails.stops[lastIndex].sched_arrive_late = moment.tz(item.ETA, destTimeZone.TzTimeZone).format('YYYYMMDDHHmmssZZ');
         }
     }
 

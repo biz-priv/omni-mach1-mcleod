@@ -141,8 +141,6 @@ async function processRecord( item ) {
     return promiseResponse;
 }
 
-
-
 function generatePayloadForGetNewOrder(item) {
     return {
         "__name": "orders",
@@ -232,13 +230,38 @@ async function generatePayloadForCreateOrder(getOrderResponse, item) {
 async function generatePayloadForUpdateOrder(getOrderResponse, item) {
     let orderDetails = { ...JSON.parse(getOrderResponse) };
 
+    delete orderDetails.enteredUser;
+    delete orderDetails.freight_charge;
+    delete orderDetails.freight_charge_c;
+    delete orderDetails.freight_charge_d;
+    delete orderDetails.freight_charge_n;
+    delete orderDetails.freight_charge_r;
     delete orderDetails.movements;
+    delete orderDetails.otherCharges;
+    delete orderDetails.otherchargetotal;
+    delete orderDetails.otherchargetotal_c;
+    delete orderDetails.otherchargetotal_d;
+    delete orderDetails.otherchargetotal_n;
+    delete orderDetails.otherchargetotal_r;
+    delete orderDetails.rate;
+    delete orderDetails.rate_units;
+    delete orderDetails.totalcharge_and_excisetax;
+    delete orderDetails.totalcharge_and_excisetax_c;
+    delete orderDetails.totalcharge_and_excisetax_d;
+    delete orderDetails.totalcharge_and_excisetax_n;
+    delete orderDetails.totalcharge_and_excisetax_r;
+    delete orderDetails.total_charge;
+    delete orderDetails.total_charge_c;
+    delete orderDetails.total_charge_d;
+    delete orderDetails.total_charge_n;
+    delete orderDetails.total_charge_r;
     orderDetails.order_type_id = orderTypeIdMapping[process.env.API_ENVIRONMENT];
     orderDetails.pallets_how_many = item.PACKS;
     orderDetails.pieces = item.PACKS;
     orderDetails.weight = item.CHARGEABLE_WEIGHT;
     orderDetails.rate_type = "C";
     orderDetails.rate_unit_desc = "CWT";
+    orderDetails.__rateTypeDescr = "CWT";
 
     if ( item.ORIGIN_PORT ) {
         let originTimeZone = await getTimeZonePort(item.ORIGIN_PORT.substring(2));
@@ -264,6 +287,7 @@ async function generatePayloadForUpdateOrder(getOrderResponse, item) {
         }
     }
 
+    delete orderDetails.freightGroup.fgpXBfgs.revenueDetails;
     orderDetails.freightGroup.total_chargeable_weight = item.CHARGEABLE_WEIGHT;
     orderDetails.freightGroup.total_handling_units = item.PACKS;
     orderDetails.freightGroup.total_pieces = item.PACKS;

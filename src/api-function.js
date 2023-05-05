@@ -294,6 +294,7 @@ async function generatePayloadForUpdateOrder(getOrderResponse, item) {
     orderDetails.freightGroup.total_req_spots = item.PACKS;
     orderDetails.freightGroup.total_weight = item.CHARGEABLE_WEIGHT;
 
+    delete orderDetails.freightGroup.freightGroupItems[0].revenueDetails;
     orderDetails.freightGroup.freightGroupItems[0].handling_units = item.PACKS;
     orderDetails.freightGroup.freightGroupItems[0].pieces = item.PACKS;
     orderDetails.freightGroup.freightGroupItems[0].req_spots = item.PACKS;

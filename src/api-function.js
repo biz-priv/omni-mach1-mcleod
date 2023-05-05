@@ -228,33 +228,18 @@ async function generatePayloadForCreateOrder(getOrderResponse, item) {
 }
 
 async function generatePayloadForUpdateOrder(getOrderResponse, item) {
-    let orderDetails = { ...JSON.parse(getOrderResponse) };
+    //Add orderId if not there "id"
+    
+    let payload = { ...JSON.parse(getOrderResponse) };
 
-    delete orderDetails.enteredUser;
-    delete orderDetails.freight_charge;
-    delete orderDetails.freight_charge_c;
-    delete orderDetails.freight_charge_d;
-    delete orderDetails.freight_charge_n;
-    delete orderDetails.freight_charge_r;
-    delete orderDetails.movements;
-    delete orderDetails.otherCharges;
-    delete orderDetails.otherchargetotal;
-    delete orderDetails.otherchargetotal_c;
-    delete orderDetails.otherchargetotal_d;
-    delete orderDetails.otherchargetotal_n;
-    delete orderDetails.otherchargetotal_r;
-    delete orderDetails.rate;
-    delete orderDetails.rate_units;
-    delete orderDetails.totalcharge_and_excisetax;
-    delete orderDetails.totalcharge_and_excisetax_c;
-    delete orderDetails.totalcharge_and_excisetax_d;
-    delete orderDetails.totalcharge_and_excisetax_n;
-    delete orderDetails.totalcharge_and_excisetax_r;
-    delete orderDetails.total_charge;
-    delete orderDetails.total_charge_c;
-    delete orderDetails.total_charge_d;
-    delete orderDetails.total_charge_n;
-    delete orderDetails.total_charge_r;
+    let {
+        enteredUser, freight_charge, freight_charge_c, freight_charge_d, freight_charge_n, freight_charge_r, movements,
+        otherCharges, otherchargetotal_c, otherchargetotal_d, otherchargetotal_n, otherchargetotal_r, rate, rate_units,
+        totalcharge_and_excisetax, totalcharge_and_excisetax_c, totalcharge_and_excisetax_d, totalcharge_and_excisetax_n,
+        totalcharge_and_excisetax_r, total_charge, total_charge_c, total_charge_d, total_charge_n, total_charge_r,
+        ...orderDetails
+    } = payload;
+
     orderDetails.order_type_id = orderTypeIdMapping[process.env.API_ENVIRONMENT];
     orderDetails.pallets_how_many = item.PACKS;
     orderDetails.pieces = item.PACKS;
@@ -278,13 +263,18 @@ async function generatePayloadForUpdateOrder(getOrderResponse, item) {
     if ( item.DESTINATION_PORT ) {
         let destTimeZone = await getTimeZonePort(item.DESTINATION_PORT.substring(2));
         if ( destTimeZone ) {
-            orderDetails.stops[5].city = item.DESTINATION_CITY;
-            orderDetails.stops[5].state = item.DESTINATION_ST;
-            orderDetails.stops[5].location_id = item.DESTINATION_LOC_ID;
-            orderDetails.stops[5].order_sequence = 2;
-            orderDetails.stops[5].sched_arrive_early = moment.tz(item.ETA, destTimeZone.TzTimeZone).format( 'YYYYMMDDHHmmssZZ');
-            orderDetails.stops[5].sched_arrive_late = moment.tz(item.ETA, destTimeZone.TzTimeZone).format('YYYYMMDDHHmmssZZ');
+            let lastIndex = orderDetails.stops.length - 1;
+            orderDetails.stops[lastIndex].city = item.DESTINATION_CITY;
+            orderDetails.stops[lastIndex].state = item.DESTINATION_ST;
+            orderDetails.stops[lastIndex].location_id = item.DESTINATION_LOC_ID;
+            orderDetails.stops[lastIndex].order_sequence = 2;
+            orderDetails.stops[lastIndex].sched_arrive_early = moment.tz(item.ETA, destTimeZone.TzTimeZone).format( 'YYYYMMDDHHmmssZZ');
+            orderDetails.stops[lastIndex].sched_arrive_late = moment.tz(item.ETA, destTimeZone.TzTimeZone).format('YYYYMMDDHHmmssZZ');
         }
+    }
+
+    if ( orderDetails.id == null ) {
+        orderDetails.id = item.mcleodId;
     }
 
     delete orderDetails.freightGroup.fgpXBfgs[0].revenueDetails;

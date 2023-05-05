@@ -287,7 +287,7 @@ async function generatePayloadForUpdateOrder(getOrderResponse, item) {
         }
     }
 
-    delete orderDetails.freightGroup.fgpXBfgs.revenueDetails;
+    delete orderDetails.freightGroup.fgpXBfgs[0].revenueDetails;
     orderDetails.freightGroup.total_chargeable_weight = item.CHARGEABLE_WEIGHT;
     orderDetails.freightGroup.total_handling_units = item.PACKS;
     orderDetails.freightGroup.total_pieces = item.PACKS;

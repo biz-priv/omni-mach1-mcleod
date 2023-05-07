@@ -1,4 +1,4 @@
 McleadApiSnsTopic:
   Type: AWS::SNS::Topic
   Properties:
-    TopicName: omni-m1-mcleod-api-topic-${self:provider.stage}
+    TopicName: omni-mcleod-api-topic-${self:provider.stage}

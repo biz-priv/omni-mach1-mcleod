@@ -15,6 +15,7 @@ const orderTypeIdMapping = {
 module.exports.handler = async (event, context) => {
     let unprocessedRecords = await queryUnprocessedRecords();
     console.log( unprocessedRecords );
+    console.log( process.env.MALEOD_API_TOPIC_ARN );
 
     let promises = unprocessedRecords.map( item => processRecord(item) );
     let resultArr =  await Promise.all( promises );

@@ -12,6 +12,8 @@ const orderTypeIdMapping = {
     "dev" : "STD"
 }
 
+let messages = [];
+
 module.exports.handler = async (event, context) => {
     let unprocessedRecords = await queryUnprocessedRecords();
     console.log( unprocessedRecords );
@@ -19,6 +21,10 @@ module.exports.handler = async (event, context) => {
     let promises = unprocessedRecords.map( item => processRecord(item) );
     let resultArr =  await Promise.all( promises );
     console.log( "Promise All Result", resultArr );
+
+    await sendMessageToSNS();
+
+    return resultArr;
 }
 
 async function queryUnprocessedRecords() {
@@ -323,4 +329,29 @@ async function addAPILogs( CONSOL_NBR, apiName, request, statusCode, response ) 
         inserted_time_stamp : moment.tz("America/Chicago").format("YYYY-MM-DD HH:mm:ss").toString()
     }
     await putItem(process.env.MALEOD_API_LOG_TABLE, logObj);
+    if ( statusCode < 200 || statusCode >= 300 ) {
+        messages.push( `- [${CONSOL_NBR}] Received ${statusCode} for ${apiName} - ${response}` )
+        // await sendMessageToSNS();
+    }
+}
+
+async function sendMessageToSNS( ) {
+    if ( messages.length > 0 ) {
+
+        let message = `
+        The following api calls failed during the last execution
+        ${messages.join('\n\t')}
+        `
+
+        var params = {
+            Message: message,
+            TopicArn: process.env.MALEOD_API_TOPIC_ARN
+        };
+        var publishTextPromise = new AWS.SNS({apiVersion: '2010-03-31'}).publish(params).promise();
+    
+        await publishTextPromise.then().catch(
+            function(err) {
+            console.error(err, err.stack);
+          });
+    }
 }

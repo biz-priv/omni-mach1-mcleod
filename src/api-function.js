@@ -339,8 +339,8 @@ async function sendMessageToSNS( ) {
     if ( messages.length > 0 ) {
 
         let message = `
-            The following api calls failed during the last execution
-            ${messages.join('/n')}
+        The following api calls failed during the last execution
+        ${messages.join('\n\t')}
         `
 
         var params = {

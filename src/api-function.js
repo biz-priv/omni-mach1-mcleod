@@ -15,7 +15,8 @@ const orderTypeIdMapping = {
 module.exports.handler = async (event, context) => {
     let unprocessedRecords = await queryUnprocessedRecords();
     console.log( unprocessedRecords );
-    console.log( process.env.MALEOD_API_TOPIC_ARN );
+
+    await sendMessageToSNS("Test");
 
     let promises = unprocessedRecords.map( item => processRecord(item) );
     let resultArr =  await Promise.all( promises );
@@ -324,4 +325,13 @@ async function addAPILogs( CONSOL_NBR, apiName, request, statusCode, response ) 
         inserted_time_stamp : moment.tz("America/Chicago").format("YYYY-MM-DD HH:mm:ss").toString()
     }
     await putItem(process.env.MALEOD_API_LOG_TABLE, logObj);
+}
+
+async function sendMessageToSNS( message ) {
+    var params = {
+        Message: message,
+        TopicArn: process.env.MALEOD_API_TOPIC_ARN
+    };
+    var publishTextPromise = new AWS.SNS({apiVersion: '2010-03-31'}).publish(params).promise();
+    await publishTextPromise();
 }

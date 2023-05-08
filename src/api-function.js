@@ -345,7 +345,8 @@ async function sendMessageToSNS( ) {
 
         var params = {
             Message: message,
-            TopicArn: process.env.MALEOD_API_TOPIC_ARN
+            TopicArn: process.env.MALEOD_API_TOPIC_ARN,
+            Subject: `${process.env.API_ENVIRONMENT.toUpperCase()} - Mach1 – Mecleod Integration Failures`
         };
         var publishTextPromise = new AWS.SNS({apiVersion: '2010-03-31'}).publish(params).promise();
     

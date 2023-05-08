@@ -22,6 +22,10 @@ provider:
       Action:
         - "s3:*"
       Resource: "*"
+    - Effect: "Allow"
+      Action:
+        - "sns:Publish"
+      Resource: "*"
   runtime: nodejs14.x
   environment:
     SERVICE: ${self:service}

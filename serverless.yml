@@ -22,6 +22,10 @@ provider:
       Action:
         - "s3:*"
       Resource: "*"
+    - Effect: "Allow"
+      Action:
+        - "sns:Publish"
+      Resource: "*"
   runtime: nodejs14.x
   environment:
     SERVICE: ${self:service}
@@ -62,6 +66,7 @@ resources:
     Mach1McleodUpdatetDLQ: ${file(config/sqs/mach1McleodUpdateQueue.yml):Mach1McleodUpdatetDLQ}
     Mach1McleodUpdateQueue: ${file(config/sqs/mach1McleodUpdateQueue.yml):Mach1McleodUpdateQueue}
     Mach1McleodUdpateQueuePolicy: ${file(config/sqs/mach1McleodUpdateQueue.yml):Mach1McleodUdpateQueuePolicy}
+    McleadApiSnsTopic : ${file(config/sns/mcleadApiSnsTopic.yml):McleadApiSnsTopic}
     M1McleodDynamoTable: ${file(config/dynamodb/mach1McleodDynamoTable.yml):M1McleodDynamoTable}
     McleodApiLogTable: ${file(config/dynamodb/mcleodApiLogTable.yml):McleodApiLogTable}
 

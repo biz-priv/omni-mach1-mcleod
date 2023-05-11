@@ -11,3 +11,8 @@ function:
   runtime: nodejs14.x
   layers:
     - { Ref: OmniMach1McleodLayerLambdaLayer }
+  vpc:
+    securityGroupIds:
+    - ${ssm:/omni-dw/${self:provider.stage}/lambda/sgId}
+    subnetIds:
+    - ${ssm:/omni-dw/${self:provider.stage}/lambda/subnetA}

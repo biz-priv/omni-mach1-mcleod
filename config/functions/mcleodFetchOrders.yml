@@ -1,0 +1,12 @@
+function:
+  name: omni-mcleod-fetch_orders-${self:provider.stage}
+  handler: src/fetch-orders.handler
+  description: Omni Mach1 Mcleod
+  package:
+    patterns:
+      - "!**/*"
+      - "src/fetch-orders.js"
+      - "src/shared/**"
+  runtime: nodejs14.x
+  layers:
+    - { Ref: OmniMach1McleodLayerLambdaLayer }

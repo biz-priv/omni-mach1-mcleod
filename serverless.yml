@@ -60,6 +60,7 @@ layers:
 functions:
   omni_m1_mcleod_csv_import: ${file(config/functions/mach1McleodCsvImportFucntion.yml):function}
   omni_m1_mcleod_api: ${file(config/functions/mach1McleodApiFunction.yml):function}  
+  omni_mcleod_fetch_orders: ${file(config/functions/mcleodFetchOrders.yml):function}  
 
 resources:
   Resources: 

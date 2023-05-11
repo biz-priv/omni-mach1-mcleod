@@ -21,32 +21,32 @@ module.exports.handler = async (event, context) => {
     try {
       var order_id = orders[y]["id"];
       var length = orders[y]["stops"].length;
-      var pickup_stop_id = output[y]["stops"][0]["location_id"];
+      var pickup_stop_id = orders[y]["stops"][0]["location_id"];
 
-      for (var w = 0; w < output[y]["stops"].length; w++) {
-        if (output[y]["stops"][w]["order_sequence"] === 6) {
-          var del_stop_id = output[y]["stops"][w]["location_id"];
+      for (var w = 0; w < orders[y]["stops"].length; w++) {
+        if (orders[y]["stops"][w]["order_sequence"] === 6) {
+          var del_stop_id = orders[y]["stops"][w]["location_id"];
         } else {
           // pass
         }
       }
-      // del_stop_id = output[y]['stops'][length-1]['location_id'];
+      // del_stop_id = orders[y]['stops'][length-1]['location_id'];
       // console.log(`${pickup_stop_id} --- ${del_stop_id}`);
 
       if (pickup_stop_id === "" || del_stop_id === "") {
         console.log(`Attempting to update ${order_id}, 6 stops`);
-        await update_order_six_stops(output[y]);
+        await update_order_six_stops(orders[y]);
       } else {
         // pass
         // console.log(`No need to update ${order_id}`);
       }
     } catch (error) {
-      if (output[y]["stops"].length === 6) {
+      if (orders[y]["stops"].length === 6) {
         console.log(`Attempting to update ${order_id}, 6 stops`);
-        await update_order_six_stops(output[y]);
-      } else if (output[y]["stops"].length === 4) {
+        await update_order_six_stops(orders[y]);
+      } else if (orders[y]["stops"].length === 4) {
         console.log(`Attempting to update ${order_id}, 4 stops`);
-        await update_order_four_stops(output[y]);
+        await update_order_four_stops(orders[y]);
       } else {
         console.log(`${order_id} is malformed`);
       }
@@ -57,7 +57,7 @@ module.exports.handler = async (event, context) => {
 };
 
 async function getOrders() {
-  // process.env["NODE_TLS_REJECT_UNAUTHORIZED"] = 0;
+  process.env["NODE_TLS_REJECT_UNAUTHORIZED"] = 0;
 
   //TODO - SSM
   var uri =

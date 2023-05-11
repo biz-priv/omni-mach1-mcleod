@@ -2,17 +2,16 @@ const request = require('request');
 
 module.exports.handler = async (event, context) => {
     console.log("EVENT:", event);
-    
-    //TODO - SSM
 
+    let orders = []
     let getOrdersResponse = await getOrders();
 
     if ( getOrdersResponse.statusCode < 200 || getOrdersResponse.statusCode >= 300 ) {
         console.log( `Error`, getOrdersResponse.body );
-        return promiseResponse;   
+        return orders;   
     }
     
-    let orders = getOrdersResponse.body;
+    orders = getOrdersResponse.body;
     console.log( orders.length );
 
     return orders;

@@ -14,11 +14,12 @@ module.exports.handler = async (event, context) => {
     return orders;
   }
 
-  orders = getOrdersResponse.body;
+  orders = JSON.parse(getOrdersResponse.body);
   console.log(orders.length);
 
-  for (var y = 0; y < 2; y++) {
+  for (var y = 0; y < orders.length; y++) {
     try {
+      console.log(orders[y]);
       var order_id = orders[y]["id"];
       var length = orders[y]["stops"].length;
       var pickup_stop_id = orders[y]["stops"][0]["location_id"];
@@ -38,9 +39,10 @@ module.exports.handler = async (event, context) => {
         await update_order_six_stops(orders[y]);
       } else {
         // pass
-        // console.log(`No need to update ${order_id}`);
+        console.log(`No need to update ${order_id}`);
       }
     } catch (error) {
+      console.log(error);
       if (orders[y]["stops"].length === 6) {
         console.log(`Attempting to update ${order_id}, 6 stops`);
         await update_order_six_stops(orders[y]);
@@ -53,7 +55,7 @@ module.exports.handler = async (event, context) => {
     }
   }
 
-  return {finished : true};
+  return orders;
 };
 
 async function getOrders() {

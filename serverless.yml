@@ -65,8 +65,8 @@ functions:
   omni_m1_mcleod_api: ${file(config/functions/mach1McleodApiFunction.yml):function}  
   omni_mcleod_fetch_orders: ${file(config/functions/mcleodFetchOrders.yml):function}  
 
-# stepFunctions:
-#   ${file(config/stepfunctions/mcleodStateMachine.yml)}
+stepFunctions:
+  ${file(config/stepfunctions/mcleodStateMachine.yml)}
 
 resources:
   Resources: 

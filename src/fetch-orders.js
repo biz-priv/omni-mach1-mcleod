@@ -53,7 +53,7 @@ module.exports.handler = async (event, context) => {
     }
   }
 
-  return orders;
+  return {finished : true};
 };
 
 async function getOrders() {

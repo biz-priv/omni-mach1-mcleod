@@ -1,0 +1,21 @@
+stateMachines:
+  OmniMcleodStateMachine:
+    name: omni-mcleod-state-machine-${self:provider.stage}
+    definition:
+      StartAt: PublishEvents
+      States:
+        PublishEvents:
+            Type : Task
+            Resource : !GetAtt omni_mcleod_fetch_orders.Arn
+            Next: 
+        EndChoice:
+            Type: Choice
+            Choices:
+            - Variable: $.hasMoreData
+                StringEquals: "false"
+                Next: SuccessState
+            - Variable: $.hasMoreData
+                StringEquals: "true"
+                Next: PublishEvents
+        SuccessState:
+            Type: Succeed

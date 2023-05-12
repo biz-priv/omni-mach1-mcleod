@@ -486,7 +486,7 @@ async function get_location(reg_uid) {
     process.env["NODE_TLS_REJECT_UNAUTHORIZED"] = 0;
 
     //TODO - SSM
-    var uri = `https://lmeuat:5690/ws/reg_x_loc/search?reg_uid=${reg_uid}`
+    var uri = `https://lme.uat-mcleod.omnilogistics.com:5690/ws/reg_x_loc/search?reg_uid=${reg_uid}`
     let options = {
       uri,
       method: "GET",

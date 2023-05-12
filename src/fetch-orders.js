@@ -18,41 +18,47 @@ module.exports.handler = async (event, context) => {
     orders = JSON.parse(getOrdersResponse.body);
     console.log(orders.length);
 
-    for (var y = 0; y < orders.length; y++) {
+    // for (var y = 0; y < orders.length; y++) {
+    for (var y = 0; y < 2; y++) {
       try {
         console.log(orders[y]);
-        var order_id = orders[y]["id"];
-        var length = orders[y]["stops"].length;
-        var pickup_stop_id = orders[y]["stops"][0]["location_id"];
+        var order_id = orders[y].id;
+        var length = orders[y].stops.length;
+        
+        var pickup_stop_id = orders[y].stops[0].location_id;
+        var del_stop_id = orders[y].stops[length-1].location_id;
 
-        for (var w = 0; w < orders[y]["stops"].length; w++) {
-          if (orders[y]["stops"][w]["order_sequence"] === 6) {
-            var del_stop_id = orders[y]["stops"][w]["location_id"];
-          } else {
-            // pass
-          }
-        }
+        // for (var w = 0; w < orders[y]["stops"].length; w++) {
+        //   if (orders[y]["stops"][w]["order_sequence"] === 6) {
+        //     var del_stop_id = orders[y]["stops"][w]["location_id"];
+        //   } else {
+        //     // pass
+        //   }
+        // }
         // del_stop_id = orders[y]['stops'][length-1]['location_id'];
         // console.log(`${pickup_stop_id} --- ${del_stop_id}`);
 
         if (pickup_stop_id === "" || del_stop_id === "") {
-          console.log(`Attempting to update ${order_id}, 6 stops`);
-          await update_order_six_stops(orders[y]);
+            if ( length == 6 ) {
+                console.log(`Attempting to update ${order_id}, 6 stops`);
+                // await update_order_six_stops(orders[y]);
+            } else {
+                console.log(`Attempting to update ${order_id}, 4 stops`);
+                // await update_order_four_stops(orders[y]);
+            }
         } else {
-          // pass
           console.log(`No need to update ${order_id}`);
         }
       } catch (error) {
-        console.log(error);
-        if (orders[y]["stops"].length === 6) {
-          console.log(`Attempting to update ${order_id}, 6 stops`);
-          await update_order_six_stops(orders[y]);
-        } else if (orders[y]["stops"].length === 4) {
-          console.log(`Attempting to update ${order_id}, 4 stops`);
-          await update_order_four_stops(orders[y]);
-        } else {
-          console.log(`${order_id} is malformed`);
-        }
+        // console.log(error);
+        // if (orders[y]["stops"].length === 6) {
+        //   console.log(`Attempting to update ${order_id}, 6 stops`);
+        //   await update_order_six_stops(orders[y]);
+        // } else if (orders[y]["stops"].length === 4) {
+
+        // } else {
+        //   console.log(`${order_id} is malformed`);
+        // }
       }
     }
   } catch (e) {

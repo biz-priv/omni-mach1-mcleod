@@ -2,6 +2,7 @@ function:
   name: omni-mcleod-fetch-orders-${self:provider.stage}
   handler: src/fetch-orders.handler
   description: Omni Mach1 Mcleod
+  timeout: 30
   package:
     patterns:
       - "!**/*"

@@ -1,6 +1,12 @@
 const request = require("request");
 
-
+const token = "5fad851f-ae7f-476b-bfb9-514840162a14";
+const headers = {
+    "Accept": "application/json",
+    "Content-Type": "application/json",
+    "Authorization": `Bearer ${token}`,
+    "verify": "False",
+};
 
 module.exports.handler = async (event, context) => {
   console.log("EVENT:", event);
@@ -76,13 +82,6 @@ async function getOrders() {
     //TODO - SSM
     var uri =
         "https://lme.uat-mcleod.omnilogistics.com:5690/ws/orders/search?orders.status=A&shipper.location_id==%7Cconsignee.location_id==&recordLength=1000";
-    const token = "5fad851f-ae7f-476b-bfb9-514840162a14";
-    const headers = {
-        "Accept": "application/json",
-        "Content-Type": "application/json",
-        "Authorization": `Bearer ${token}`,
-        "verify": "False",
-    };
 
     let options = {
         uri,
@@ -438,14 +437,7 @@ async function getZipCode(zipcode) {
     process.env["NODE_TLS_REJECT_UNAUTHORIZED"] = 0;
 
     //TODO - SSM
-    var uri = `https://lmeuat:5690/ws/reg_x_zip/search?fd_zipcode=${zipcode}`
-    const token = "5fad851f-ae7f-476b-bfb9-514840162a14";
-    const headers = {
-        "Accept": "application/json",
-        "Content-Type": "application/json",
-        "Authorization": `Bearer ${token}`,
-        "verify": "False",
-    };
+    var uri = `https://lme.uat-mcleod.omnilogistics.com:5690/ws/reg_x_zip/search?fd_zipcode=${zipcode}`
     let options = {
       uri,
       method: "GET",

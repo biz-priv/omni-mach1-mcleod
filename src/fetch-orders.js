@@ -101,13 +101,14 @@ async function getOrders() {
 }
 
 async function update_order_six_stops(orderData) {
-    
     let pickup_stops = orderData.stops.slice(0,2);
     let delivery_stops = orderData.stops.slice(3,5);
 
     pickup_stops = await update_stops(pickup_stops);
-    delivery_stops = await update_stops(delivery_stops);
+    delivery_stops = await update_stops(delivery_stops.reverse());
 
+    let updated_stops = [...pickup_stops, ...delivery_stops.reverse()];
+    console.log("updated_stops", updated_stops);
 }
 
 
@@ -408,36 +409,84 @@ async function update_stops( stops ) {
 
     let location_id = stops[0].location_id;
 
-    if ( location_id ) {
-        updated_stops = updated_stops.map( item => { return {
-            ...item,
-            location_id
-        }});
-    } else {
+    if ( !location_id ) {
         let {address, city_name, state, zip_code, location_name} = stops[0];
         if ( !location_name ) {
             location_name = city_name;
         }
 
-        let zipcode_response = await getZipCode(zip_code);
+        let zipcode_response = await get_zipcode(zip_code);
 
         if ( zipcode_response.statusCode < 200 || zipcode_response.statusCode >= 300) {
             console.log(`Error`, zipcode_response.body);
             return updated_stops
         }
 
-        let zipcodes = JSON.parse( zipcode_response.data );
-        console.log("Zipcodes" , zipcodes);
+        let zipcodes = JSON.parse( zipcode_response.body );
+        for (let index = 0; index < array.length; index++) {
+            const element = zipcodes[index];
+            if ( element.rxz_type_code == 'OPER' ) {
+                loc_code = element.reg_uid_row.parent_reg_name;
+                reg_uid = element.reg_uid_row.reg_uid;
+
+                let get_location_response = await get_location(reg_uid);
+
+                if ( get_location_response.statusCode < 200 || get_location_response.statusCode >= 300) {
+                    console.log(`Error`, get_location_response.body);
+                    return updated_stops
+                }
+
+                let locations = JSON.parse(get_location_response.body);
+                console.log("locations", locations)
+
+                for (let index2 = 0; index2 < array.length; index2++) {
+                    const element1 = locations[index2];
+                    if ( element1.location_id[0] == "O") {
+                        location_id = element.location_id;
+                    }
+                }
+            }
+        }
+    }
+
+    if ( location_id ) {
+        updated_stops = updated_stops.map( item => { return {
+            ...item,
+            location_id
+        }});
     }
 
     return updated_stops;
 }
 
-async function getZipCode(zipcode) {
+async function get_zipcode(zipcode) {
     process.env["NODE_TLS_REJECT_UNAUTHORIZED"] = 0;
 
     //TODO - SSM
     var uri = `https://lme.uat-mcleod.omnilogistics.com:5690/ws/reg_x_zip/search?fd_zipcode=${zipcode}`
+    let options = {
+      uri,
+      method: "GET",
+      headers,
+    };
+
+    return new Promise((resolve, reject) => {
+        request(options, function (err, data, body) {
+            if (err) {
+                console.log("Error", err);
+                reject(err);
+            } else {
+                resolve({ statusCode: data.statusCode, body });
+            }
+        });
+    });
+}
+
+async function get_location(reg_uid) {
+    process.env["NODE_TLS_REJECT_UNAUTHORIZED"] = 0;
+
+    //TODO - SSM
+    var uri = `https://lmeuat:5690/ws/reg_x_loc/search?reg_uid=${reg_uid}`
     let options = {
       uri,
       method: "GET",

@@ -1,6 +1,6 @@
 const request = require("request");
 
-const token = "5fad851f-ae7f-476b-bfb9-514840162a14";
+const token = "bf2e0b10-7227-4a13-82a4-2b610587ef2d";
 const headers = {
     "Accept": "application/json",
     "Content-Type": "application/json",
@@ -262,7 +262,7 @@ async function update_stops(update_payload) {
     process.env["NODE_TLS_REJECT_UNAUTHORIZED"] = 0;
 
     //TODO - SSM
-    var uri = `https://lmeuat.na.addsomni.com:5690/ws/orders/update`
+    var uri = `https://lme.uat-mcleod.omnilogistics.com:5690/ws/orders/update`
     let options = {
       uri,
       method: "PUT",

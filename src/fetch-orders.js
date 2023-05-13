@@ -101,8 +101,8 @@ async function getOrders() {
 }
 
 async function update_order_six_stops(order) {
-    let pickup_stops = order.stops.slice(0,2);
-    let delivery_stops = order.stops.slice(3,5);
+    let pickup_stops = order.stops.slice(0,3);
+    let delivery_stops = order.stops.slice(3,6);
 
 
     console.log("pickup_stops", pickup_stops);
@@ -206,6 +206,13 @@ async function update_stops( stops ) {
                     }
                 }
             }
+        }
+
+        updated_stops[0] = {
+            ...updated_stops[0],
+            showas_address: address,
+            showas_address2: `${city_name} ${state} ${zip_code}`,
+            showas_location_name: location_name
         }
     }
 

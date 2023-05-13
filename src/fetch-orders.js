@@ -104,7 +104,11 @@ async function update_order_six_stops(order) {
     let pickup_stops = order.stops.slice(0,2);
     let delivery_stops = order.stops.slice(3,5);
 
+
+    console.log("pickup_stops", pickup_stops);
     pickup_stops = await update_stops(pickup_stops);
+    console.log("pickup_stops", pickup_stops);
+    
     delivery_stops = await update_stops(delivery_stops.reverse());
 
     let update_payload = {
@@ -152,6 +156,7 @@ async function update_order_four_stops(order) {
 
 async function update_stops( stops ) {
     let updated_stops = [];
+    console.log("stops", stops)
     updated_stops = stops.map( item => { return {
         __type: "stop",
         __name: "stops",
@@ -159,10 +164,13 @@ async function update_stops( stops ) {
         id: item.id,
         order_sequence: item.order_sequence
     }});
+    console.log("updated_stops", updated_stops)
 
-    let location_id = stops[0].location_id;
-
+    let location_id = stops[0].location_id; 
+    console.log("location_id", location_id)
+    
     if ( !location_id ) {
+        console.log("here")
         let {address, city_name, state, zip_code, location_name} = stops[0];
         if ( !location_name ) {
             location_name = city_name;

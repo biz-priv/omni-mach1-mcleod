@@ -120,7 +120,7 @@ async function update_order_six_stops(order) {
     }
     console.log("update_payload", update_payload);
 
-    // let update_stops_response = await update_stops(update_payload);
+    // let update_stops_response = await update_order(update_payload);
     
     // if ( update_stops_response.statusCode < 200 || update_stops_response.statusCode >= 300) {
     //     console.log(`Error updating ${order_id}`, update_stops_response.body);
@@ -145,7 +145,7 @@ async function update_order_four_stops(order) {
     }
     console.log("update_payload", update_payload);
 
-    // let update_stops_response = await update_stops(update_payload);
+    // let update_stops_response = await update_order(update_payload);
     
     // if ( update_stops_response.statusCode < 200 || update_stops_response.statusCode >= 300) {
     //     console.log(`Error updating ${order_id}`, update_stops_response.body);
@@ -265,7 +265,7 @@ async function get_location(reg_uid) {
     });
 }
 
-async function update_stops(update_payload) {
+async function update_order(update_payload) {
     process.env["NODE_TLS_REJECT_UNAUTHORIZED"] = 0;
 
     //TODO - SSM

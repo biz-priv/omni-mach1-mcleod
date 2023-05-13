@@ -176,11 +176,10 @@ async function update_stops( stops ) {
         }
 
         let zipcodes = JSON.parse( zipcode_response.body );
-        for (let index = 0; index < array.length; index++) {
+        for (let index = 0; index < zipcodes.length; index++) {
             const element = zipcodes[index];
             if ( element.rxz_type_code == 'OPER' ) {
-                loc_code = element.reg_uid_row.parent_reg_name;
-                reg_uid = element.reg_uid_row.reg_uid;
+                let reg_uid = element.reg_uid_row.reg_uid;
 
                 let get_location_response = await get_location(reg_uid);
 
@@ -192,7 +191,7 @@ async function update_stops( stops ) {
                 let locations = JSON.parse(get_location_response.body);
                 console.log("locations", locations)
 
-                for (let index2 = 0; index2 < array.length; index2++) {
+                for (let index2 = 0; index2 < locations.length; index2++) {
                     const element1 = locations[index2];
                     if ( element1.location_id[0] == "O") {
                         location_id = element.location_id;

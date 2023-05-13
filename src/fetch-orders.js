@@ -194,12 +194,11 @@ async function update_stops( stops ) {
                 }
 
                 let locations = JSON.parse(get_location_response.body);
-                console.log("locations", locations)
 
                 for (let index2 = 0; index2 < locations.length; index2++) {
                     const element1 = locations[index2];
                     if ( element1.location_id[0] == "O") {
-                        location_id = element.location_id;
+                        location_id = element1.location_id;
                     }
                 }
             }
@@ -213,9 +212,7 @@ async function update_stops( stops ) {
         }
     }
 
-    console.log("location_id", location_id)
     if ( location_id ) {
-        console.log("here")
         updated_stops = updated_stops.map( item => { return {
             ...item,
             location_id

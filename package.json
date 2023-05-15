@@ -5,7 +5,8 @@
   "main": "index.js",
   "devDependencies": {
     "serverless": "^2.72.3",
-    "serverless-offline": "^8.8.0"
+    "serverless-offline": "^8.8.0",
+    "serverless-step-functions": "^3.11.1"
   },
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"

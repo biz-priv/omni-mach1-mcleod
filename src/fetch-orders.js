@@ -27,7 +27,8 @@ module.exports.handler = async (event, context) => {
     orders = JSON.parse(getOrdersResponse.body);
     console.log("Orders Length - ", orders.length);
 
-    for (var y = 0; y < loop_count && y < orders.length ; y++) {
+    let processedRecords = 0, y;
+    for (y = 0; processedRecords < loop_count && y < orders.length ; y++) {
         console.log(orders[y]);
         var order_id = orders[y].id;
         var length = orders[y].stops.length;
@@ -43,12 +44,13 @@ module.exports.handler = async (event, context) => {
                 console.log(`Attempting to update ${order_id}, 4 stops`);
                 await update_order_four_stops(orders[y]);
             }
+            processedRecords++;
         } else {
           console.log(`No need to update ${order_id}`);
         }
     }
 
-    if (orders.length - loop_count > 0) {
+    if (orders.length - y > 0) {
         return { hasMoreData: "true" };
     } else {
         return { hasMoreData: "false" };

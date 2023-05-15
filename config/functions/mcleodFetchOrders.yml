@@ -1,0 +1,21 @@
+function:
+  name: omni-mcleod-fetch-orders-${self:provider.stage}
+  handler: src/fetch-orders.handler
+  description: Omni Mach1 Mcleod
+  timeout: 30
+  package:
+    patterns:
+      - "!**/*"
+      - "src/fetch-orders.js"
+      - "src/shared/**"
+  runtime: nodejs14.x
+  layers:
+    - { Ref: OmniMach1McleodLayerLambdaLayer }
+  environment:
+    MALEOD_API_ENDPOINT: ${ssm:/omni-mach1-mcleod/${self:provider.stage}/mcleod-api-endpoint~true}
+    MALEOD_API_TOKEN: ${ssm:/omni-mach1-mcleod/${self:provider.stage}/mcleod-api-token~true}
+  vpc:
+    securityGroupIds:
+    - ${ssm:/omni-dw/${self:provider.stage}/lambda/sgId}
+    subnetIds:
+    - ${ssm:/omni-dw/${self:provider.stage}/lambda/subnetA}

@@ -11,9 +11,12 @@ stateMachines:
         EndChoice:
           Type: Choice
           Choices:
-            - Variable: $.finished
+            - Variable: $.hasMoreData
               StringEquals: "true"
+              Next: PublishEvents
+            - Variable: $.hasMoreData
+              StringEquals: "false"
               Next: SuccessState
-          Default: PublishEvents
+          Default: SuccessState
         SuccessState:
-            Type: Succeed
+          Type: Succeed

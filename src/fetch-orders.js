@@ -167,34 +167,36 @@ async function update_stops( stops ) {
         }
 
         let zipcodes = JSON.parse( zipcode_response.body );
-        for (let index = 0; index < zipcodes.length; index++) {
-            const element = zipcodes[index];
-            if ( element.rxz_type_code == 'OPER' ) {
-                let reg_uid = element.reg_uid_row.reg_uid;
-
-                let get_location_response = await get_location(reg_uid);
-
-                if ( get_location_response.statusCode < 200 || get_location_response.statusCode >= 300) {
-                    console.log(`Error`, get_location_response.body);
-                    return updated_stops
-                }
-
-                let locations = JSON.parse(get_location_response.body);
-
-                for (let index2 = 0; index2 < locations.length; index2++) {
-                    const element1 = locations[index2];
-                    if ( element1.location_id[0] == "O") {
-                        location_id = element1.location_id;
+        if (zipcodes)  {
+            for (let index = 0; index < zipcodes.length; index++) {
+                const element = zipcodes[index];
+                if ( element.rxz_type_code == 'OPER' ) {
+                    let reg_uid = element.reg_uid_row.reg_uid;
+    
+                    let get_location_response = await get_location(reg_uid);
+    
+                    if ( get_location_response.statusCode < 200 || get_location_response.statusCode >= 300) {
+                        console.log(`Error`, get_location_response.body);
+                        return updated_stops
+                    }
+    
+                    let locations = JSON.parse(get_location_response.body);
+    
+                    for (let index2 = 0; index2 < locations.length; index2++) {
+                        const element1 = locations[index2];
+                        if ( element1.location_id[0] == "O") {
+                            location_id = element1.location_id;
+                        }
                     }
                 }
             }
-        }
-
-        updated_stops[0] = {
-            ...updated_stops[0],
-            showas_address: address,
-            showas_address2: `${city_name} ${state} ${zip_code}`,
-            showas_location_name: location_name
+    
+            updated_stops[0] = {
+                ...updated_stops[0],
+                showas_address: address,
+                showas_address2: `${city_name} ${state} ${zip_code}`,
+                showas_location_name: location_name
+            }
         }
     }
 

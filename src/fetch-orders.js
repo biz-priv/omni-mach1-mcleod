@@ -28,7 +28,6 @@ module.exports.handler = async (event, context) => {
     console.log("Orders Length - ", orders.length);
 
     for (var y = 0; y < loop_count && y < orders.length ; y++) {
-      try {
         console.log(orders[y]);
         var order_id = orders[y].id;
         var length = orders[y].stops.length;
@@ -47,27 +46,18 @@ module.exports.handler = async (event, context) => {
         } else {
           console.log(`No need to update ${order_id}`);
         }
-      } catch (error) {
-        // console.log(error);
-        // if (orders[y]["stops"].length === 6) {
-        //   console.log(`Attempting to update ${order_id}, 6 stops`);
-        //   await update_order_six_stops(orders[y]);
-        // } else if (orders[y]["stops"].length === 4) {
+    }
 
-        // } else {
-        //   console.log(`${order_id} is malformed`);
-        // }
-      }
+    if (orders.length - loop_count > 0) {
+        return { hasMoreData: "true" };
+    } else {
+        return { hasMoreData: "false" };
     }
   } catch (e) {
     console.log(e);
   }
 
-  if ( orders.length - loop_count > 0 ) {
-    return {hasMoreData : "true"};
-  } else {
-    return {hasMoreData : "false"};
-  }
+  return {hasMoreData : "false"};
 };
 
 async function getOrders() {

@@ -26,7 +26,6 @@ module.exports.handler = async (event, context) => {
     orders = JSON.parse(getOrdersResponse.body);
     console.log(orders.length);
 
-    // for (var y = 0; y < orders.length; y++) {
     for (var y = 0; y < 1; y++) {
       try {
         console.log(orders[y]);
@@ -36,23 +35,13 @@ module.exports.handler = async (event, context) => {
         var pickup_stop_id = orders[y].stops[0].location_id;
         var del_stop_id = orders[y].stops[length-1].location_id;
 
-        // for (var w = 0; w < orders[y]["stops"].length; w++) {
-        //   if (orders[y]["stops"][w]["order_sequence"] === 6) {
-        //     var del_stop_id = orders[y]["stops"][w]["location_id"];
-        //   } else {
-        //     // pass
-        //   }
-        // }
-        // del_stop_id = orders[y]['stops'][length-1]['location_id'];
-        // console.log(`${pickup_stop_id} --- ${del_stop_id}`);
-
         if ( !pickup_stop_id || !del_stop_id ) {
             if ( length == 6 ) {
                 console.log(`Attempting to update ${order_id}, 6 stops`);
                 await update_order_six_stops(orders[y]);
             } else {
                 console.log(`Attempting to update ${order_id}, 4 stops`);
-                // await update_order_four_stops(orders[y]);
+                await update_order_four_stops(orders[y]);
             }
         } else {
           console.log(`No need to update ${order_id}`);
@@ -120,13 +109,13 @@ async function update_order_six_stops(order) {
     }
     console.log("update_payload", update_payload);
 
-    // let update_stops_response = await update_order(update_payload);
+    let update_stops_response = await update_order(update_payload);
     
-    // if ( update_stops_response.statusCode < 200 || update_stops_response.statusCode >= 300) {
-    //     console.log(`Error updating ${order_id}`, update_stops_response.body);
-    // } else {
-    //     console.log(`Success updating ${order_id}`);
-    // }
+    if ( update_stops_response.statusCode < 200 || update_stops_response.statusCode >= 300) {
+        console.log(`Error updating ${order_id}`, update_stops_response.body);
+    } else {
+        console.log(`Success updating ${order_id}`);
+    }
 }
 
 async function update_order_four_stops(order) {

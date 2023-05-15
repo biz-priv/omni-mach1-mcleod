@@ -1,12 +1,5 @@
-const request = require("request");
+const {getLocation, getZipcode, updateOrder, getOrders} = require("./shared/mcleod-api-helper")
 
-const token = "bf2e0b10-7227-4a13-82a4-2b610587ef2d";
-const headers = {
-    "Accept": "application/json",
-    "Content-Type": "application/json",
-    "Authorization": `Bearer ${token}`,
-    "verify": "False",
-};
 const loop_count = 2;
 
 module.exports.handler = async (event, context) => {
@@ -62,30 +55,6 @@ module.exports.handler = async (event, context) => {
   return {hasMoreData : "false"};
 };
 
-async function getOrders() {
-    process.env["NODE_TLS_REJECT_UNAUTHORIZED"] = 0;
-
-    //TODO - SSM
-    var uri =
-        "https://lme.uat-mcleod.omnilogistics.com:5690/ws/orders/search?orders.status=A&shipper.location_id==%7Cconsignee.location_id==&recordLength=1000";
-
-    let options = {
-        uri,
-        method: "GET",
-        headers,
-    };
-    return new Promise((resolve, reject) => {
-        request(options, function (err, data, body) {
-        if (err) {
-            console.log("Error", err);
-            reject(err);
-        } else {
-            resolve({ statusCode: data.statusCode, body });
-        }
-        });
-    });
-}
-
 async function update_order_six_stops(order) {
     let pickup_stops = order.stops.slice(0,3);
     let delivery_stops = order.stops.slice(3,6);
@@ -106,7 +75,7 @@ async function update_order_six_stops(order) {
     }
     console.log("update_payload", update_payload);
 
-    let update_stops_response = await update_order(update_payload);
+    let update_stops_response = await updateOrder(update_payload);
     
     if ( update_stops_response.statusCode < 200 || update_stops_response.statusCode >= 300) {
         console.log(`Error updating ${order.id}`, update_stops_response.body);
@@ -159,7 +128,7 @@ async function update_stops( stops ) {
             location_name = city_name;
         }
 
-        let zipcode_response = await get_zipcode(zip_code);
+        let zipcode_response = await getZipcode(zip_code);
 
         if ( zipcode_response.statusCode < 200 || zipcode_response.statusCode >= 300) {
             console.log(`Error`, zipcode_response.body);
@@ -173,7 +142,7 @@ async function update_stops( stops ) {
                 if ( element.rxz_type_code == 'OPER' ) {
                     let reg_uid = element.reg_uid_row.reg_uid;
     
-                    let get_location_response = await get_location(reg_uid);
+                    let get_location_response = await getLocation(reg_uid);
     
                     if ( get_location_response.statusCode < 200 || get_location_response.statusCode >= 300) {
                         console.log(`Error`, get_location_response.body);
@@ -208,74 +177,4 @@ async function update_stops( stops ) {
     }
 
     return updated_stops;
-}
-
-async function get_zipcode(zipcode) {
-    process.env["NODE_TLS_REJECT_UNAUTHORIZED"] = 0;
-
-    //TODO - SSM
-    var uri = `https://lme.uat-mcleod.omnilogistics.com:5690/ws/reg_x_zip/search?fd_zipcode=${zipcode}`
-    let options = {
-      uri,
-      method: "GET",
-      headers,
-    };
-
-    return new Promise((resolve, reject) => {
-        request(options, function (err, data, body) {
-            if (err) {
-                console.log("Error", err);
-                reject(err);
-            } else {
-                resolve({ statusCode: data.statusCode, body });
-            }
-        });
-    });
-}
-
-async function get_location(reg_uid) {
-    process.env["NODE_TLS_REJECT_UNAUTHORIZED"] = 0;
-
-    //TODO - SSM
-    var uri = `https://lme.uat-mcleod.omnilogistics.com:5690/ws/reg_x_loc/search?reg_uid=${reg_uid}`
-    let options = {
-      uri,
-      method: "GET",
-      headers,
-    };
-
-    return new Promise((resolve, reject) => {
-        request(options, function (err, data, body) {
-            if (err) {
-                console.log("Error", err);
-                reject(err);
-            } else {
-                resolve({ statusCode: data.statusCode, body });
-            }
-        });
-    });
-}
-
-async function update_order(bodyPayload) {
-    process.env["NODE_TLS_REJECT_UNAUTHORIZED"] = 0;
-
-    //TODO - SSM
-    var uri = `https://lme.uat-mcleod.omnilogistics.com:5690/ws/orders/update`
-    let options = {
-      uri,
-      method: "PUT",
-      headers,
-      json : bodyPayload
-    };
-
-    return new Promise((resolve, reject) => {
-        request(options, function (err, data, body) {
-            if (err) {
-                console.log("Error", err);
-                reject(err);
-            } else {
-                resolve({ statusCode: data.statusCode, body });
-            }
-        });
-    });
 }

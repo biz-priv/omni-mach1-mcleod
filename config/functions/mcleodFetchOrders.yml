@@ -11,6 +11,9 @@ function:
   runtime: nodejs14.x
   layers:
     - { Ref: OmniMach1McleodLayerLambdaLayer }
+  environment:
+    MALEOD_API_ENDPOINT: ${ssm:/omni-mach1-mcleod/${self:provider.stage}/mcleod-api-endpoint~true}
+    MALEOD_API_TOKEN: ${ssm:/omni-mach1-mcleod/${self:provider.stage}/mcleod-api-token~true}
   vpc:
     securityGroupIds:
     - ${ssm:/omni-dw/${self:provider.stage}/lambda/sgId}

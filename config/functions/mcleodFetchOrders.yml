@@ -12,10 +12,10 @@ function:
   layers:
     - { Ref: OmniMach1McleodLayerLambdaLayer }
   environment:
-    # MALEOD_API_ENDPOINT: ${ssm:/omni-mach1-mcleod/${self:provider.stage}/mcleod-api-endpoint~true}
-    # MALEOD_API_TOKEN: ${ssm:/omni-mach1-mcleod/${self:provider.stage}/mcleod-api-token~true}
-    MALEOD_API_ENDPOINT: "https://lme.uat-mcleod.omnilogistics.com:5690/ws/"
-    MALEOD_API_TOKEN: "bf2e0b10-7227-4a13-82a4-2b610587ef2d"
+    MALEOD_API_ENDPOINT: ${ssm:/omni-mach1-mcleod/${self:provider.stage}/mcleod-api-endpoint~true}
+    MALEOD_API_TOKEN: ${ssm:/omni-mach1-mcleod/${self:provider.stage}/mcleod-api-token~true}
+    # MALEOD_API_ENDPOINT: "https://lme.uat-mcleod.omnilogistics.com:5690/ws/"
+    # MALEOD_API_TOKEN: "bf2e0b10-7227-4a13-82a4-2b610587ef2d"
   vpc:
     securityGroupIds:
     - ${ssm:/omni-dw/${self:provider.stage}/lambda/sgId}

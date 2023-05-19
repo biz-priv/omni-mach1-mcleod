@@ -1,6 +1,6 @@
 const request = require('request');
 
-const api_key = "AIzaSyAU9buHNDnquWqbkvblYE7H6EFazFflRDo"
+const api_key = process.env.GOOGLE_API_TOKEN;
 
 async function getLatLng(address) {
     let options = {

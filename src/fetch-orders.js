@@ -1,4 +1,5 @@
 const {getLocation, getZipcode, updateOrder, getOrders} = require("./shared/mcleod-api-helper")
+const {getZipcodeFromGoogle} = require("./shared/google-api-helper")
 
 const loop_count = 10;
 
@@ -59,13 +60,9 @@ async function update_order_six_stops(order) {
     let pickup_stops = order.stops.slice(0,3);
     let delivery_stops = order.stops.slice(3,6);
 
-
-    console.log("pickup_stops", pickup_stops);
-    pickup_stops = await update_stops(pickup_stops);
-    console.log("pickup_stops", pickup_stops);
-    
+    pickup_stops = await update_stops(pickup_stops);    
     delivery_stops = await update_stops(delivery_stops.reverse());
-
+    
     let update_payload = {
         __name: "orders",
         __type: "orders",
@@ -85,12 +82,12 @@ async function update_order_six_stops(order) {
 }
 
 async function update_order_four_stops(order) {
-    let pickup_stops = order.stops.slice(0,1);
-    let delivery_stops = order.stops.slice(2,3);
+    let pickup_stops = order.stops.slice(0,2);
+    let delivery_stops = order.stops.slice(2,4);
 
-    pickup_stops = await update_stops(pickup_stops);
+    pickup_stops = await update_stops(pickup_stops);    
     delivery_stops = await update_stops(delivery_stops.reverse());
-
+    
     let update_payload = {
         __name: "orders",
         __type: "orders",
@@ -100,13 +97,13 @@ async function update_order_four_stops(order) {
     }
     console.log("update_payload", update_payload);
 
-    let update_stops_response = await update_order(update_payload);
+    // let update_stops_response = await updateOrder(update_payload);
     
-    if ( update_stops_response.statusCode < 200 || update_stops_response.statusCode >= 300) {
-        console.log(`Error updating ${order.id}`, update_stops_response.body);
-    } else {
-        console.log(`Success updating ${order.id}`);
-    }
+    // if ( update_stops_response.statusCode < 200 || update_stops_response.statusCode >= 300) {
+    //     console.log(`Error updating ${order.id}`, update_stops_response.body);
+    // } else {
+    //     console.log(`Success updating ${order.id}`);
+    // }
 }
 
 async function update_stops( stops ) {
@@ -126,6 +123,11 @@ async function update_stops( stops ) {
         let {address, city_name, state, zip_code, location_name} = stops[0];
         if ( !location_name ) {
             location_name = city_name;
+        }
+
+        if ( !zip_code ) {
+            zip_code = await getZipcodeFromGoogle(`${address},${city_name},${state}`);
+            console.log("Zipcode from Google : ", zip_code);
         }
 
         let zipcode_response = await getZipcode(zip_code);

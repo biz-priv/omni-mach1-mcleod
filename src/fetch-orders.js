@@ -1,7 +1,7 @@
 const {getLocation, getZipcode, updateOrder, getOrders} = require("./shared/mcleod-api-helper")
 const {getZipcodeFromGoogle} = require("./shared/google-api-helper")
 
-const loop_count = 10;
+const loop_count = 1;
 
 module.exports.handler = async (event, context) => {
   console.log("EVENT:", event);

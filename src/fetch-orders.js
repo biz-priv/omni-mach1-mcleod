@@ -76,13 +76,13 @@ async function update_order_six_stops(order) {
     }
     console.log("update_payload", update_payload);
 
-    let update_stops_response = await updateOrder(update_payload);
+    // let update_stops_response = await updateOrder(update_payload);
     
-    if ( update_stops_response.statusCode < 200 || update_stops_response.statusCode >= 300) {
-        console.log(`Error updating ${order.id}`, update_stops_response.body);
-    } else {
-        console.log(`Success updating ${order.id}`);
-    }
+    // if ( update_stops_response.statusCode < 200 || update_stops_response.statusCode >= 300) {
+    //     console.log(`Error updating ${order.id}`, update_stops_response.body);
+    // } else {
+    //     console.log(`Success updating ${order.id}`);
+    // }
 }
 
 async function update_order_four_stops(order) {
@@ -101,13 +101,13 @@ async function update_order_four_stops(order) {
     }
     console.log("update_payload", update_payload);
 
-    let update_stops_response = await updateOrder(update_payload);
+    // let update_stops_response = await updateOrder(update_payload);
     
-    if ( update_stops_response.statusCode < 200 || update_stops_response.statusCode >= 300) {
-        console.log(`Error updating ${order.id}`, update_stops_response.body);
-    } else {
-        console.log(`Success updating ${order.id}`);
-    }
+    // if ( update_stops_response.statusCode < 200 || update_stops_response.statusCode >= 300) {
+    //     console.log(`Error updating ${order.id}`, update_stops_response.body);
+    // } else {
+    //     console.log(`Success updating ${order.id}`);
+    // }
 }
 
 async function update_stops( stops ) {
@@ -131,6 +131,7 @@ async function update_stops( stops ) {
 
         if ( !zip_code ) {
             zip_code = await getZipcodeFromGoogle(`${address},${city_name},${state}`);
+            console.log("Zipcode from Google : ", zip_code);
         }
 
         let zipcode_response = await getZipcode(zip_code);

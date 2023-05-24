@@ -31,6 +31,7 @@ module.exports.handler = async (event, context) => {
         var del_stop_id = orders[y].stops[length-1].location_id;
 
         if ( (!pickup_stop_id || !del_stop_id) && length >= 4 ) {
+            processedRecords++;
             if ( length == 6 ) {
                 console.log(`Attempting to update ${order_id}, 6 stops`);
                 await update_order_six_stops(orders[y]);
@@ -38,7 +39,6 @@ module.exports.handler = async (event, context) => {
                 console.log(`Attempting to update ${order_id}, 4 stops`);
                 await update_order_four_stops(orders[y]);
             }
-            processedRecords++;
         } else {
           console.log(`No need to update ${order_id}`);
         }

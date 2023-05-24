@@ -21,30 +21,30 @@ module.exports.handler = async (event, context) => {
     orders = JSON.parse(getOrdersResponse.body);
     console.log("Orders Length - ", orders.length);
 
-    let processedRecords = 0, y;
-    for (y = 0; processedRecords < loop_count && y < orders.length ; y++) {
-        console.log(orders[y]);
-        var order_id = orders[y].id;
-        var length = orders[y].stops.length;
+    let processedRecords = 0, index = event.index ?? 0;
+    for (; processedRecords < loop_count && index < orders.length ; index++) {
+        console.log(orders[index]);
+        var order_id = orders[index].id;
+        var length = orders[index].stops.length;
         
-        var pickup_stop_id = orders[y].stops[0].location_id;
-        var del_stop_id = orders[y].stops[length-1].location_id;
+        var pickup_stop_id = orders[index].stops[0].location_id;
+        var del_stop_id = orders[index].stops[length-1].location_id;
 
         if ( (!pickup_stop_id || !del_stop_id) && length >= 4 ) {
             processedRecords++;
             if ( length == 6 ) {
                 console.log(`Attempting to update ${order_id}, 6 stops`);
-                await update_order_six_stops(orders[y]);
+                await update_order_six_stops(orders[index]);
             } else {
                 console.log(`Attempting to update ${order_id}, 4 stops`);
-                await update_order_four_stops(orders[y]);
+                await update_order_four_stops(orders[index]);
             }
         } else {
           console.log(`No need to update ${order_id}`);
         }
     }
 
-    if (orders.length - y > 0) {
+    if (orders.length - index > 0) {
         return { hasMoreData: "true" };
     } else {
         return { hasMoreData: "false" };

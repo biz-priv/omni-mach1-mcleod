@@ -7,6 +7,7 @@ async function getLatLng(address) {
         uri: `https://maps.googleapis.com/maps/api/geocode/json?address=${address}&key=${api_key}`,
         method: 'GET'
     };
+    console.log("Google api uri - ", options.uri);
     return new Promise((resolve, reject) => {
         request(options, function (err, data, body) {
             if (err) {
@@ -24,6 +25,7 @@ async function getZipCode(lat, lng) {
         uri: `https://maps.googleapis.com/maps/api/geocode/json?latlng=${lat},${lng}&sensor=false&key=${api_key}`,
         method: 'GET'
     };
+    console.log("Google api uri - ", options.uri);
     return new Promise((resolve, reject) => {
         request(options, function (err, data, body) {
             if (err) {

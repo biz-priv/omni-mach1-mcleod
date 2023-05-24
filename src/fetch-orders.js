@@ -81,7 +81,7 @@ async function update_order_six_stops(order) {
             console.log(`Success updating ${order.id}`);
         }
     } else {
-        console.log( `pickup_region_found - ${pickup_region_found}, delivery_region_found - ${delivery_region_found}` );
+        console.log( `pickup_region_found - ${updated_pickup_stops.region_found}, delivery_region_found - ${updated_delivery_stops.region_found}` );
     }
 
 }
@@ -111,7 +111,7 @@ async function update_order_four_stops(order) {
             console.log(`Success updating ${order.id}`);
         }
     } else {
-        console.log( `pickup_region_found - ${pickup_region_found}, delivery_region_found - ${delivery_region_found}` );
+        console.log( `pickup_region_found - ${updated_pickup_stops.region_found}, delivery_region_found - ${updated_delivery_stops.region_found}` );
     }
 }
 

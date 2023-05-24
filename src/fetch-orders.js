@@ -45,9 +45,9 @@ module.exports.handler = async (event, context) => {
     }
 
     if (orders.length - index > 0) {
-        return { hasMoreData: "true" };
+        return { hasMoreData: "true", index };
     } else {
-        return { hasMoreData: "false" };
+        return { hasMoreData: "false", index };
     }
   } catch (e) {
     console.log(e);

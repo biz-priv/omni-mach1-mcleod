@@ -90,17 +90,29 @@ async function update_order_four_stops(order) {
     let pickup_stops = order.stops.slice(0,2);
     let delivery_stops = order.stops.slice(2,4);
 
-    pickup_stops = await update_stops(pickup_stops);    
-    delivery_stops = await update_stops(delivery_stops.reverse());
+    let {updated_pickup_stops, pickup_region_found} = await update_stops(pickup_stops);    
+    let {updated_delivery_stops, delivery_region_found} = await update_stops(delivery_stops.reverse());
     
-    let update_payload = {
-        __name: "orders",
-        __type: "orders",
-        company_id: "TMS",
-        id: order.id,
-        stops: [...pickup_stops, ...delivery_stops.reverse()]
+    if ( pickup_region_found || delivery_region_found ) {
+        let update_payload = {
+            __name: "orders",
+            __type: "orders",
+            company_id: "TMS",
+            id: order.id,
+            stops: [...updated_pickup_stops, ...updated_delivery_stops.reverse()]
+        }
+        console.log("update_payload", update_payload);
+    
+        let update_stops_response = await updateOrder(update_payload);
+        
+        if ( update_stops_response.statusCode < 200 || update_stops_response.statusCode >= 300) {
+            console.log(`Error updating ${order.id}`, update_stops_response.body);
+        } else {
+            console.log(`Success updating ${order.id}`);
+        }
+    } else {
+        console.log( `pickup_region_found - ${pickup_region_found}, delivery_region_found - ${delivery_region_found}` );
     }
-    console.log("update_payload", update_payload);
 }
 
 async function update_stops( stops ) {

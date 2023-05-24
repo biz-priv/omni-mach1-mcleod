@@ -1,4 +1,4 @@
-const {getLocation, getZipcode, updateOrder, getOrders} = require("./shared/mcleod-api-helper")
+const {getRegion, getZipcode, updateOrder, getOrders} = require("./shared/mcleod-api-helper")
 const {getZipcodeFromGoogle} = require("./shared/google-api-helper")
 
 const loop_count = 10;
@@ -60,25 +60,30 @@ async function update_order_six_stops(order) {
     let pickup_stops = order.stops.slice(0,3);
     let delivery_stops = order.stops.slice(3,6);
 
-    pickup_stops = await update_stops(pickup_stops);    
-    delivery_stops = await update_stops(delivery_stops.reverse());
+    let {updated_pickup_stops, pickup_region_found} = await update_stops(pickup_stops);    
+    let {updated_delivery_stops, delivery_region_found} = await update_stops(delivery_stops.reverse());
     
-    let update_payload = {
-        __name: "orders",
-        __type: "orders",
-        company_id: "TMS",
-        id: order.id,
-        stops: [...pickup_stops, ...delivery_stops.reverse()]
-    }
-    console.log("update_payload", update_payload);
-
-    let update_stops_response = await updateOrder(update_payload);
+    if ( pickup_region_found || delivery_region_found ) {
+        let update_payload = {
+            __name: "orders",
+            __type: "orders",
+            company_id: "TMS",
+            id: order.id,
+            stops: [...updated_pickup_stops, ...updated_delivery_stops.reverse()]
+        }
+        console.log("update_payload", update_payload);
     
-    if ( update_stops_response.statusCode < 200 || update_stops_response.statusCode >= 300) {
-        console.log(`Error updating ${order.id}`, update_stops_response.body);
+        let update_stops_response = await updateOrder(update_payload);
+        
+        if ( update_stops_response.statusCode < 200 || update_stops_response.statusCode >= 300) {
+            console.log(`Error updating ${order.id}`, update_stops_response.body);
+        } else {
+            console.log(`Success updating ${order.id}`);
+        }
     } else {
-        console.log(`Success updating ${order.id}`);
+        console.log( `pickup_region_found - ${pickup_region_found}, delivery_region_found - ${delivery_region_found}` );
     }
+
 }
 
 async function update_order_four_stops(order) {
@@ -96,19 +101,12 @@ async function update_order_four_stops(order) {
         stops: [...pickup_stops, ...delivery_stops.reverse()]
     }
     console.log("update_payload", update_payload);
-
-    // let update_stops_response = await updateOrder(update_payload);
-    
-    // if ( update_stops_response.statusCode < 200 || update_stops_response.statusCode >= 300) {
-    //     console.log(`Error updating ${order.id}`, update_stops_response.body);
-    // } else {
-    //     console.log(`Success updating ${order.id}`);
-    // }
 }
 
 async function update_stops( stops ) {
     
     let updated_stops = [];
+    let region_found = false;
     updated_stops = stops.map( item => { return {
         __type: "stop",
         __name: "stops",
@@ -144,7 +142,7 @@ async function update_stops( stops ) {
                 if ( element.rxz_type_code == 'OPER' ) {
                     let reg_uid = element.reg_uid_row.reg_uid;
     
-                    let get_location_response = await getLocation(reg_uid);
+                    let get_location_response = await getRegion(reg_uid);
     
                     if ( get_location_response.statusCode < 200 || get_location_response.statusCode >= 300) {
                         console.log(`Error`, get_location_response.body);
@@ -157,6 +155,7 @@ async function update_stops( stops ) {
                         const element1 = locations[index2];
                         if ( element1.location_id[0] == "O") {
                             location_id = element1.location_id;
+                            region_found = true;
                         }
                     }
                 }
@@ -178,5 +177,5 @@ async function update_stops( stops ) {
         }});
     }
 
-    return updated_stops;
+    return {updated_stops, region_found};
 }

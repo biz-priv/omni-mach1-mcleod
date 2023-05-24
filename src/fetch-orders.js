@@ -87,8 +87,8 @@ async function update_order_six_stops(order) {
 }
 
 async function update_order_four_stops(order) {
-    let pickup_stops = order.stops.slice(0,2);
-    let delivery_stops = order.stops.slice(2,4);
+    let pickup_stops = order.stops.slice(0,3);
+    let delivery_stops = order.stops.slice(3,4);
 
     let updated_pickup_stops = await update_stops(pickup_stops);    
     let updated_delivery_stops = await update_stops(delivery_stops.reverse());

@@ -63,7 +63,7 @@ async function update_order_six_stops(order) {
     let updated_pickup_stops = await update_stops(pickup_stops);    
     let updated_delivery_stops = await update_stops(delivery_stops.reverse());
     
-    if ( updated_pickup_stops.pickup_region_found || updated_delivery_stops.delivery_region_found ) {
+    if ( updated_pickup_stops.region_found || updated_delivery_stops.region_found ) {
         let update_payload = {
             __name: "orders",
             __type: "orders",
@@ -93,7 +93,7 @@ async function update_order_four_stops(order) {
     let updated_pickup_stops = await update_stops(pickup_stops);    
     let updated_delivery_stops = await update_stops(delivery_stops.reverse());
     
-    if ( updated_pickup_stops.pickup_region_found || updated_delivery_stops.delivery_region_found ) {
+    if ( updated_pickup_stops.region_found || updated_delivery_stops.region_found ) {
         let update_payload = {
             __name: "orders",
             __type: "orders",

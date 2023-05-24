@@ -60,16 +60,16 @@ async function update_order_six_stops(order) {
     let pickup_stops = order.stops.slice(0,3);
     let delivery_stops = order.stops.slice(3,6);
 
-    let {updated_pickup_stops, pickup_region_found} = await update_stops(pickup_stops);    
-    let {updated_delivery_stops, delivery_region_found} = await update_stops(delivery_stops.reverse());
+    let updated_pickup_stops = await update_stops(pickup_stops);    
+    let updated_delivery_stops = await update_stops(delivery_stops.reverse());
     
-    if ( pickup_region_found || delivery_region_found ) {
+    if ( updated_pickup_stops.pickup_region_found || updated_delivery_stops.delivery_region_found ) {
         let update_payload = {
             __name: "orders",
             __type: "orders",
             company_id: "TMS",
             id: order.id,
-            stops: [...updated_pickup_stops, ...updated_delivery_stops.reverse()]
+            stops: [...updated_pickup_stops.updated_stops, ...updated_delivery_stops.updated_stops.reverse()]
         }
         console.log("update_payload", update_payload);
     
@@ -90,16 +90,16 @@ async function update_order_four_stops(order) {
     let pickup_stops = order.stops.slice(0,2);
     let delivery_stops = order.stops.slice(2,4);
 
-    let {updated_pickup_stops, pickup_region_found} = await update_stops(pickup_stops);    
-    let {updated_delivery_stops, delivery_region_found} = await update_stops(delivery_stops.reverse());
+    let updated_pickup_stops = await update_stops(pickup_stops);    
+    let updated_delivery_stops = await update_stops(delivery_stops.reverse());
     
-    if ( pickup_region_found || delivery_region_found ) {
+    if ( updated_pickup_stops.pickup_region_found || updated_delivery_stops.delivery_region_found ) {
         let update_payload = {
             __name: "orders",
             __type: "orders",
             company_id: "TMS",
             id: order.id,
-            stops: [...updated_pickup_stops, ...updated_delivery_stops.reverse()]
+            stops: [...updated_pickup_stops.updated_stops, ...updated_delivery_stops.updated_stops.reverse()]
         }
         console.log("update_payload", update_payload);
     

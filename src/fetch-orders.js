@@ -144,7 +144,7 @@ async function update_stops( stops ) {
 
         if ( zipcode_response.statusCode < 200 || zipcode_response.statusCode >= 300) {
             console.log(`Error`, zipcode_response.body);
-            return updated_stops
+            return {updated_stops, region_found}
         }
 
         let zipcodes = JSON.parse( zipcode_response.body );

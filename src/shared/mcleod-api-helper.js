@@ -146,7 +146,7 @@ async function getZipcode(zipcode) {
     });
 }
 
-async function getLocation(reg_uid) {
+async function getRegion(reg_uid) {
     process.env["NODE_TLS_REJECT_UNAUTHORIZED"] = 0;
 
     var uri = `${process.env.MALEOD_API_ENDPOINT}reg_x_loc/search?reg_uid=${reg_uid}`
@@ -199,5 +199,5 @@ module.exports = {
     updateOrder,
     getOrders,
     getZipcode,
-    getLocation
+    getRegion
 };

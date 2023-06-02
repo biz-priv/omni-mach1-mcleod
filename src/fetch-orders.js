@@ -7,7 +7,7 @@ module.exports.handler = async (event, context) => {
   console.log("EVENT:", event);
 
   try {
-    let orders = await getOrders();
+    let {orders, isConsignee} = await getOrders();
     console.log("Orders Length - ", orders.length);
 
     let processedRecords = 0, index = event.index ?? 0;
@@ -33,7 +33,7 @@ module.exports.handler = async (event, context) => {
         }
     }
 
-    if (orders.length - index > 0) {
+    if (orders.length - index > 0 || isConsignee) {
         return { hasMoreData: "true", index };
     } else {
         return { hasMoreData: "false", index };

@@ -7,52 +7,9 @@ module.exports.handler = async (event, context) => {
   console.log("EVENT:", event);
 
   try {
-    let {orders, isConsignee} = await getOrders();
-    console.log("Orders Length - ", orders.length);
-
-    let processedRecords = 0, index = event.index ?? 0;
-    for (; processedRecords < loop_count && index < orders.length ; index++) {
-        console.log(orders[index]);
-        var order_id = orders[index].id;
-        try {
-            var length = orders[index].stops.length;
-            
-            var pickup_stop_id = orders[index].stops[0].location_id;
-            var del_stop_id = orders[index].stops[length-1].location_id;
-    
-            if ( (!pickup_stop_id || !del_stop_id) && length >= 4 ) {
-                processedRecords++;
-                if ( length == 6 ) {
-                    console.log(`Attempting to update ${order_id}, 6 stops`);
-                    await update_order_six_stops(orders[index]);
-                } else {
-                    console.log(`Attempting to update ${order_id}, 4 stops`);
-                    await update_order_four_stops(orders[index]);
-                }
-            } else {
-              console.log(`No need to update ${order_id}`);
-            }
-        } catch(err) {
-            console.log(`Error to update ${order_id}`);
-        }
-    }
-
-    if (orders.length - index > 0 || isConsignee) {
-        return { hasMoreData: "true", index };
-    } else {
-        return { hasMoreData: "false", index };
-    }
-  } catch (e) {
-    console.log(e);
-  }
-
-  return {hasMoreData : "false"};
-};
-
-async function getOrders() {
-    let isConsignee = false;
     let orders = [];
-    let getOrdersResponse = await getOrdersWithoutShipper();
+    let isConsignee = event.isConsignee ?? false;
+    let getOrdersResponse = isConsignee ? await getOrdersWithoutConsignee() : await getOrdersWithoutShipper();
 
     if (
       getOrdersResponse.statusCode < 200 ||
@@ -63,27 +20,45 @@ async function getOrders() {
     }
 
     orders = JSON.parse(getOrdersResponse.body);
-    console.log("Orders Without Shipper Length - ", orders.length);
+    console.log("Orders Length - ", orders.length);
 
-    if ( orders.length > 0 ) {
-        return {orders, isConsignee};
+    let processedRecords = 0, index = event.index ?? 0;
+    for (; processedRecords < loop_count && index < orders.length ; index++) {
+        console.log(orders[index]);
+        var order_id = orders[index].id;
+        var length = orders[index].stops.length;
+        
+        var pickup_stop_id = orders[index].stops[0].location_id;
+        var del_stop_id = orders[index].stops[length-1].location_id;
+
+        if ( (!pickup_stop_id || !del_stop_id) && length >= 4 ) {
+            processedRecords++;
+            if ( length == 6 ) {
+                console.log(`Attempting to update ${order_id}, 6 stops`);
+                await update_order_six_stops(orders[index]);
+            } else {
+                console.log(`Attempting to update ${order_id}, 4 stops`);
+                await update_order_four_stops(orders[index]);
+            }
+        } else {
+          console.log(`No need to update ${order_id}`);
+        }
     }
 
-    getOrdersResponse = await getOrdersWithoutConsignee();
-
-    if (
-        getOrdersResponse.statusCode < 200 ||
-        getOrdersResponse.statusCode >= 300
-    ) {
-        console.log(`Error`, getOrdersResponse.body);
-        return orders;
+    if (orders.length - index > 0) {
+        return { hasMoreData: "true", index, isConsignee };
+    } else {
+        if ( isConsignee ) {
+            return { hasMoreData: "true", index : 0, isConsignee : true };
+        }
+        return { hasMoreData: "false", index, isConsignee };
     }
+  } catch (e) {
+    console.log(e);
+  }
 
-    orders = JSON.parse(getOrdersResponse.body);
-    console.log("Orders Without Consignee Length - ", orders.length);
-  
-    return {orders, isConsignee};
-}
+  return {hasMoreData : "false"};
+};
 
 async function update_order_six_stops(order) {
     let pickup_stops = order.stops.slice(0,3);

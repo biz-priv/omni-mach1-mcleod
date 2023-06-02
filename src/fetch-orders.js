@@ -52,7 +52,7 @@ module.exports.handler = async (event, context) => {
     if (orders.length - index > 0) {
         return { hasMoreData: "true", index, isConsignee };
     } else {
-        if ( isConsignee ) {
+        if ( !isConsignee ) {
             return { hasMoreData: "true", index : 0, isConsignee : true };
         }
         return { hasMoreData: "false", index, isConsignee };

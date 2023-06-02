@@ -1,4 +1,4 @@
-const {getRegion, getZipcode, updateOrder, getOrders} = require("./shared/mcleod-api-helper")
+const {getRegion, getZipcode, updateOrder, getOrdersWithoutConsignee, getOrdersWithoutShipper} = require("./shared/mcleod-api-helper")
 const {getZipcodeFromGoogle} = require("./shared/google-api-helper")
 
 const loop_count = 10;
@@ -7,18 +7,7 @@ module.exports.handler = async (event, context) => {
   console.log("EVENT:", event);
 
   try {
-    let orders = [];
-    let getOrdersResponse = await getOrders();
-
-    if (
-      getOrdersResponse.statusCode < 200 ||
-      getOrdersResponse.statusCode >= 300
-    ) {
-      console.log(`Error`, getOrdersResponse.body);
-      return orders;
-    }
-
-    orders = JSON.parse(getOrdersResponse.body);
+    let orders = await getOrders();
     console.log("Orders Length - ", orders.length);
 
     let processedRecords = 0, index = event.index ?? 0;
@@ -55,6 +44,42 @@ module.exports.handler = async (event, context) => {
 
   return {hasMoreData : "false"};
 };
+
+async function getOrders() {
+    let isConsignee = false;
+    let orders = [];
+    let getOrdersResponse = await getOrdersWithoutShipper();
+
+    if (
+      getOrdersResponse.statusCode < 200 ||
+      getOrdersResponse.statusCode >= 300
+    ) {
+      console.log(`Error`, getOrdersResponse.body);
+      return orders;
+    }
+
+    orders = JSON.parse(getOrdersResponse.body);
+    console.log("Orders Without Shipper Length - ", orders.length);
+
+    if ( orders.length > 0 ) {
+        return {orders, isConsignee};
+    }
+
+    getOrdersResponse = await getOrdersWithoutConsignee();
+
+    if (
+        getOrdersResponse.statusCode < 200 ||
+        getOrdersResponse.statusCode >= 300
+    ) {
+        console.log(`Error`, getOrdersResponse.body);
+        return orders;
+    }
+
+    orders = JSON.parse(getOrdersResponse.body);
+    console.log("Orders Without Consignee Length - ", orders.length);
+  
+    return {orders, isConsignee};
+}
 
 async function update_order_six_stops(order) {
     let pickup_stops = order.stops.slice(0,3);

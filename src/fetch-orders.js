@@ -1,4 +1,4 @@
-const {getRegion, getZipcode, updateOrder, getOrders} = require("./shared/mcleod-api-helper")
+const {getRegion, getZipcode, updateOrder, getOrdersWithoutConsignee, getOrdersWithoutShipper} = require("./shared/mcleod-api-helper")
 const {getZipcodeFromGoogle} = require("./shared/google-api-helper")
 
 const loop_count = 10;
@@ -8,7 +8,8 @@ module.exports.handler = async (event, context) => {
 
   try {
     let orders = [];
-    let getOrdersResponse = await getOrders();
+    let isConsignee = event.isConsignee ?? false;
+    let getOrdersResponse = isConsignee ? await getOrdersWithoutConsignee() : await getOrdersWithoutShipper();
 
     if (
       getOrdersResponse.statusCode < 200 ||
@@ -27,27 +28,34 @@ module.exports.handler = async (event, context) => {
         var order_id = orders[index].id;
         var length = orders[index].stops.length;
         
-        var pickup_stop_id = orders[index].stops[0].location_id;
-        var del_stop_id = orders[index].stops[length-1].location_id;
-
-        if ( (!pickup_stop_id || !del_stop_id) && length >= 4 ) {
-            processedRecords++;
-            if ( length == 6 ) {
-                console.log(`Attempting to update ${order_id}, 6 stops`);
-                await update_order_six_stops(orders[index]);
+        try {
+            var pickup_stop_id = orders[index].stops[0].location_id;
+            var del_stop_id = orders[index].stops[length-1].location_id;
+    
+            if ( (!pickup_stop_id || !del_stop_id) && length >= 4 ) {
+                processedRecords++;
+                if ( length == 6 ) {
+                    console.log(`Attempting to update ${order_id}, 6 stops`);
+                    await update_order_six_stops(orders[index]);
+                } else {
+                    console.log(`Attempting to update ${order_id}, 4 stops`);
+                    await update_order_four_stops(orders[index]);
+                }
             } else {
-                console.log(`Attempting to update ${order_id}, 4 stops`);
-                await update_order_four_stops(orders[index]);
+              console.log(`No need to update ${order_id}`);
             }
-        } else {
-          console.log(`No need to update ${order_id}`);
+        } catch(e) {
+            console.log(`Error updating ${order_id}`)
         }
     }
 
     if (orders.length - index > 0) {
-        return { hasMoreData: "true", index };
+        return { hasMoreData: "true", index, isConsignee };
     } else {
-        return { hasMoreData: "false", index };
+        if ( !isConsignee ) {
+            return { hasMoreData: "true", index : 0, isConsignee : true };
+        }
+        return { hasMoreData: "false", index, isConsignee };
     }
   } catch (e) {
     console.log(e);

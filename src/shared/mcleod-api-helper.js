@@ -100,12 +100,34 @@ async function updateOrder(bodyPayload) {
     });
 }
 
-async function getOrders() {
+async function getOrdersWithoutShipper() {
     process.env["NODE_TLS_REJECT_UNAUTHORIZED"] = 0;
 
-    //TODO - SSM
     var uri =
-        `${process.env.MALEOD_API_ENDPOINT}orders/search?orders.status=A&shipper.location_id==%7Cconsignee.location_id==&recordLength=1000`;
+        `${process.env.MALEOD_API_ENDPOINT}orders/search?status=A&shipper.location_id==&recordLength=1000`;
+
+    let options = {
+        uri,
+        method: "GET",
+        headers,
+    };
+    return new Promise((resolve, reject) => {
+        request(options, function (err, data, body) {
+        if (err) {
+            console.log("Error", err);
+            reject(err);
+        } else {
+            resolve({ statusCode: data.statusCode, body });
+        }
+        });
+    });
+}
+
+async function getOrdersWithoutConsignee() {
+    process.env["NODE_TLS_REJECT_UNAUTHORIZED"] = 0;
+
+    var uri =
+        `${process.env.MALEOD_API_ENDPOINT}orders/search?status=A&consignee.location_id==&recordLength=1000`;
 
     let options = {
         uri,
@@ -197,7 +219,8 @@ module.exports = {
     getOrderById,
     postNewOrder,
     updateOrder,
-    getOrders,
+    getOrdersWithoutConsignee,
+    getOrdersWithoutShipper,
     getZipcode,
     getRegion
 };

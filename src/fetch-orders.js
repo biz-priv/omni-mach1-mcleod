@@ -138,7 +138,7 @@ async function update_stops( stops ) {
     let location_id = stops[0].location_id; 
     
     if ( !location_id ) {
-        let {address, city_name, state, zip_code, location_name} = stops[0];
+        let {address, city_id, city_name, state, zip_code, location_name} = stops[0];
         if ( !location_name ) {
             location_name = city_name;
         }
@@ -171,21 +171,37 @@ async function update_stops( stops ) {
     
                     let locations = JSON.parse(get_location_response.body);
     
-                    for (let index2 = 0; index2 < locations.length; index2++) {
-                        const element1 = locations[index2];
-                        if ( element1.location_id[0] == "O") {
-                            location_id = element1.location_id;
-                            region_found = true;
-                        }
-                    }
-                }
+                    // for (let index2 = 0; index2 < locations.length; index2++) {
+                    //     const element1 = locations[index2];
+                    //     if ( element1.location_id[0] == "O") {
+                    //         location_id = element1.location_id;
+                    //         region_found = true;
+                    //     }
+                    // }
+                 }
             }
     
+            // updated_stops[0] = {
+            //     ...updated_stops[0],
+            //     showas_address: address,
+            //     showas_address2: `${city_name} ${state} ${zip_code}`,
+            //     showas_location_name: location_name
+            // }
             updated_stops[0] = {
-                ...updated_stops[0],
-                showas_address: address,
-                showas_address2: `${city_name} ${state} ${zip_code}`,
-                showas_location_name: location_name
+                "__type": locations[0].__type,
+                "__name": locations[0].__name,
+                "company_id": locations[0].company_id,
+                "id": locations[0].id,
+                "location_id": location_id,
+                "order_sequence": locations[0].order_sequence,
+                "sched_arrive_early": locations[0].sched_arrive_early,
+                "sched_arrive_late": locations[0].sched_arrive_late,
+                "showas_address": address,
+                "showas_location_name": location_name,
+                "showas_city_name": city_name,
+                "showas_city_id": city_id,
+                "showas_state": state,
+                "showas_zip_code": zip_code
             }
         }
     }

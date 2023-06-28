@@ -1,10 +1,11 @@
 const request = require('request');
 
+const auth = "Basic " + new Buffer(process.env.MALEOD_API_USERNAME + ":" + process.env.MALEOD_API_PASSWORD).toString("base64")
 const token = process.env.MALEOD_API_TOKEN;
 const headers = {
     "Accept": "application/json",
     "Content-Type": "application/json",
-    "Authorization": `Bearer ${token}`,
+    "Authorization": auth,
     "verify": "False",
 };
 
@@ -15,7 +16,7 @@ async function getNewOrder(bodyPayload) {
         method: 'GET',
         headers: {
             'Content-Type': 'application/json',
-            'Authorization': `Bearer ${process.env.MALEOD_API_TOKEN}`
+            'Authorization': auth
         },
         json : bodyPayload
     };
@@ -39,7 +40,7 @@ async function getOrderById( orderId ) {
         headers: {
             'Accept' : 'application/json',
             'Content-Type': 'application/json',
-            'Authorization': `Bearer ${process.env.MALEOD_API_TOKEN}`
+            'Authorization': auth
         }
     };
     return new Promise((resolve, reject) => {
@@ -61,7 +62,7 @@ async function postNewOrder(bodyPayload) {
         method: 'PUT',
         headers: {
             'Content-Type': 'application/json',
-            'Authorization': `Bearer ${process.env.MALEOD_API_TOKEN}`
+            'Authorization': auth
         },
         json : bodyPayload
     };
@@ -84,7 +85,7 @@ async function updateOrder(bodyPayload) {
         method: 'PUT',
         headers: {
             'Content-Type': 'application/json',
-            'Authorization': `Bearer ${process.env.MALEOD_API_TOKEN}`
+            'Authorization': auth
         },
         json : bodyPayload
     };
@@ -189,30 +190,6 @@ async function getRegion(reg_uid) {
         });
     });
 }
-
-// async function update_order(bodyPayload) {
-//     process.env["NODE_TLS_REJECT_UNAUTHORIZED"] = 0;
-
-//     //TODO - SSM
-//     var uri = `${process.env.MALEOD_API_ENDPOINT}orders/update`
-//     let options = {
-//       uri,
-//       method: "PUT",
-//       headers,
-//       json : bodyPayload
-//     };
-
-//     return new Promise((resolve, reject) => {
-//         request(options, function (err, data, body) {
-//             if (err) {
-//                 console.log("Error", err);
-//                 reject(err);
-//             } else {
-//                 resolve({ statusCode: data.statusCode, body });
-//             }
-//         });
-//     });
-// }
 
 module.exports = {
     getNewOrder,

@@ -138,7 +138,7 @@ async function update_stops( stops ) {
     let location_id = stops[0].location_id; 
     
     if ( !location_id ) {
-        let {address, city_name, state, zip_code, location_name} = stops[0];
+        let {address, city_id, city_name, state, zip_code, location_name} = stops[0];
         if ( !location_name ) {
             location_name = city_name;
         }
@@ -178,23 +178,29 @@ async function update_stops( stops ) {
                             region_found = true;
                         }
                     }
-                }
+                 }
             }
     
-            updated_stops[0] = {
-                ...updated_stops[0],
-                showas_address: address,
-                showas_address2: `${city_name} ${state} ${zip_code}`,
-                showas_location_name: location_name
-            }
-        }
-    }
 
-    if ( location_id ) {
-        updated_stops = updated_stops.map( item => { return {
-            ...item,
-            location_id
-        }});
+            updated_stops[0] = {
+                "__type": stops[0].__type,
+                "__name": stops[0].__name,
+                "company_id": stops[0].company_id,
+                "id": stops[0].id,
+                "location_id": location_id,
+                "order_sequence": stops[0].order_sequence,
+                "sched_arrive_early": stops[0].sched_arrive_early
+            }
+
+            if ( "sched_arrive_late" in stops[0] ) { updated_stops[0].sched_arrive_late = stops[0].sched_arrive_late }
+            if ( "address" in stops[0] ) { updated_stops[0].showas_address = stops[0].address }
+            if ( "location_name" in stops[0] ) { updated_stops[0].showas_location_name = stops[0].location_name }
+            if ( "city_name" in stops[0] ) { updated_stops[0].showas_city_name = stops[0].city_name }
+            if ( "city_id" in stops[0] ) { updated_stops[0].showas_city_id = stops[0].city_id }
+            if ( "state" in stops[0] ) { updated_stops[0].showas_state = stops[0].state }
+            if ( "zip_code" in stops[0] ) { updated_stops[0].showas_zip_code = stops[0].zip_code }
+
+        }
     }
 
     return {updated_stops, region_found};

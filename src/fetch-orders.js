@@ -181,12 +181,6 @@ async function update_stops( stops ) {
                  }
             }
     
-            // updated_stops[0] = {
-            //     ...updated_stops[0],
-            //     showas_address: address,
-            //     showas_address2: `${city_name} ${state} ${zip_code}`,
-            //     showas_location_name: location_name
-            // }
 
             updated_stops[0] = {
                 "__type": stops[0].__type,
@@ -208,13 +202,6 @@ async function update_stops( stops ) {
 
         }
     }
-
-    // if ( location_id ) {
-    //     updated_stops = updated_stops.map( item => { return {
-    //         ...item,
-    //         location_id
-    //     }});
-    // }
 
     return {updated_stops, region_found};
 }

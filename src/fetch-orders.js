@@ -193,7 +193,7 @@ async function update_stops( stops ) {
             }
 
             if ( "sched_arrive_late" in stops[0] ) { updated_stops[0].sched_arrive_late = stops[0].sched_arrive_late }
-            if ( "address" in stops[0] ) { updated_stops[0].sched_arrive_late = stops[0].showas_address }
+            if ( "address" in stops[0] ) { updated_stops[0].showas_address = stops[0].address }
             if ( "location_name" in stops[0] ) { updated_stops[0].showas_location_name = stops[0].location_name }
             if ( "city_name" in stops[0] ) { updated_stops[0].showas_city_name = stops[0].city_name }
             if ( "city_id" in stops[0] ) { updated_stops[0].showas_city_id = stops[0].city_id }

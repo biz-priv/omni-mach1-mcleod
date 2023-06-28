@@ -171,13 +171,13 @@ async function update_stops( stops ) {
     
                     let locations = JSON.parse(get_location_response.body);
     
-                    // for (let index2 = 0; index2 < locations.length; index2++) {
-                    //     const element1 = locations[index2];
-                    //     if ( element1.location_id[0] == "O") {
-                    //         location_id = element1.location_id;
-                    //         region_found = true;
-                    //     }
-                    // }
+                    for (let index2 = 0; index2 < locations.length; index2++) {
+                        const element1 = locations[index2];
+                        if ( element1.location_id[0] == "O") {
+                            location_id = element1.location_id;
+                            region_found = true;
+                        }
+                    }
                  }
             }
     

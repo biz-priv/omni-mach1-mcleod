@@ -188,14 +188,14 @@ async function update_stops( stops ) {
             //     showas_location_name: location_name
             // }
             updated_stops[0] = {
-                "__type": locations[0].__type,
-                "__name": locations[0].__name,
-                "company_id": locations[0].company_id,
-                "id": locations[0].id,
+                "__type": stops[0].__type,
+                "__name": stops[0].__name,
+                "company_id": stops[0].company_id,
+                "id": stops[0].id,
                 "location_id": location_id,
-                "order_sequence": locations[0].order_sequence,
-                "sched_arrive_early": locations[0].sched_arrive_early,
-                "sched_arrive_late": locations[0].sched_arrive_late,
+                "order_sequence": stops[0].order_sequence,
+                "sched_arrive_early": stops[0].sched_arrive_early,
+                "sched_arrive_late": stops[0].sched_arrive_late,
                 "showas_address": address,
                 "showas_location_name": location_name,
                 "showas_city_name": city_name,
@@ -206,12 +206,12 @@ async function update_stops( stops ) {
         }
     }
 
-    if ( location_id ) {
-        updated_stops = updated_stops.map( item => { return {
-            ...item,
-            location_id
-        }});
-    }
+    // if ( location_id ) {
+    //     updated_stops = updated_stops.map( item => { return {
+    //         ...item,
+    //         location_id
+    //     }});
+    // }
 
     return {updated_stops, region_found};
 }

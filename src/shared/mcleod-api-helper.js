@@ -1,16 +1,16 @@
 const request = require('request');
+const axios = require('axios');
 
 // const auth = "Basic " + new Buffer(process.env.MALEOD_API_USERNAME + ":" + process.env.MALEOD_API_PASSWORD).toString("base64")
 const auth = {
-    "user" : process.env.MALEOD_API_USERNAME,
-    "pass" : process.env.MALEOD_API_PASSWORD,
-    "sendImmediately": false
+    username : process.env.MALEOD_API_USERNAME,
+    password : process.env.MALEOD_API_PASSWORD,
 }
 const token = process.env.MALEOD_API_TOKEN;
 const headers = {
     "Accept": "application/json",
     "Content-Type": "application/json",
-    "verify": "False",
+    // "verify": "False",
 };
 
 async function getNewOrder(bodyPayload) {
@@ -108,25 +108,57 @@ async function updateOrder(bodyPayload) {
 async function getOrdersWithoutShipper() {
     process.env["NODE_TLS_REJECT_UNAUTHORIZED"] = 0;
 
-    var uri =
+    // var uri =
+    //     `${process.env.MALEOD_API_ENDPOINT}orders/search?status=A&shipper.location_id==&recordLength=1000`;
+
+    // let options = {
+    //     uri,
+    //     method: "GET",
+    //     headers,
+    //     auth
+    // };
+    // console.log("options", options);
+    // return new Promise((resolve, reject) => {
+    //     request(options, function (err, data, body) {
+    //     if (err) {
+    //         console.log("Error", err);
+    //         reject(err);
+    //     } else {
+    //         resolve({ statusCode: data.statusCode, body });
+    //     }
+    //     });
+    // });
+
+
+
+    var url =
         `${process.env.MALEOD_API_ENDPOINT}orders/search?status=A&shipper.location_id==&recordLength=1000`;
 
     let options = {
-        uri,
-        method: "GET",
+        url,
+        method: "get",
         headers,
         auth
     };
     console.log("options", options);
     return new Promise((resolve, reject) => {
-        request(options, function (err, data, body) {
-        if (err) {
-            console.log("Error", err);
-            reject(err);
-        } else {
-            resolve({ statusCode: data.statusCode, body });
-        }
-        });
+        // axios(options, function (err, data, body) {
+        // if (err) {
+        //     console.log("Error", err);
+        //     reject(err);
+        // } else {
+        //     resolve({ statusCode: data.statusCode, body });
+        // }
+        // });
+
+        axios(options).then(function (response) {
+            console.log(response);
+            resolve({ statusCode: response.statusCode, body : response.data })
+          })
+          .catch(function (error) {
+            console.log(error);
+            reject(err)
+          });
     });
 }
 

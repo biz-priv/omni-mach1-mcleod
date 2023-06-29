@@ -9,7 +9,6 @@ const token = process.env.MALEOD_API_TOKEN;
 const headers = {
     "Accept": "application/json",
     "Content-Type": "application/json",
-    "Authorization": auth,
     "verify": "False",
 };
 
@@ -115,6 +114,7 @@ async function getOrdersWithoutShipper() {
         uri,
         method: "GET",
         headers,
+        auth
     };
     return new Promise((resolve, reject) => {
         request(options, function (err, data, body) {
@@ -138,6 +138,7 @@ async function getOrdersWithoutConsignee() {
         uri,
         method: "GET",
         headers,
+        auth
     };
     return new Promise((resolve, reject) => {
         request(options, function (err, data, body) {
@@ -159,6 +160,7 @@ async function getZipcode(zipcode) {
       uri,
       method: "GET",
       headers,
+      auth
     };
 
     return new Promise((resolve, reject) => {
@@ -181,6 +183,7 @@ async function getRegion(reg_uid) {
       uri,
       method: "GET",
       headers,
+      auth
     };
 
     return new Promise((resolve, reject) => {

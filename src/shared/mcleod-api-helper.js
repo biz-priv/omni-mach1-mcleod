@@ -1,6 +1,10 @@
 const request = require('request');
 
-const auth = "Basic " + new Buffer(process.env.MALEOD_API_USERNAME + ":" + process.env.MALEOD_API_PASSWORD).toString("base64")
+// const auth = "Basic " + new Buffer(process.env.MALEOD_API_USERNAME + ":" + process.env.MALEOD_API_PASSWORD).toString("base64")
+const auth = {
+    "user" : process.env.MALEOD_API_USERNAME,
+    "pass" : process.env.MALEOD_API_PASSWORD
+}
 const token = process.env.MALEOD_API_TOKEN;
 const headers = {
     "Accept": "application/json",

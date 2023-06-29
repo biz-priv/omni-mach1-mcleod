@@ -15,7 +15,7 @@ module.exports.handler = async (event, context) => {
       getOrdersResponse.statusCode < 200 ||
       getOrdersResponse.statusCode >= 300
     ) {
-      console.log(`Error`, getOrdersResponse.body);
+      console.log(`Error`, getOrdersResponse);
       return orders;
     }
 

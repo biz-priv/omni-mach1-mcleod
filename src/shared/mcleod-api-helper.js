@@ -116,6 +116,7 @@ async function getOrdersWithoutShipper() {
         headers,
         auth
     };
+    console.log("options", options);
     return new Promise((resolve, reject) => {
         request(options, function (err, data, body) {
         if (err) {
@@ -140,6 +141,7 @@ async function getOrdersWithoutConsignee() {
         headers,
         auth
     };
+    console.log("options", options);
     return new Promise((resolve, reject) => {
         request(options, function (err, data, body) {
         if (err) {

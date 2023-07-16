@@ -1,0 +1,26 @@
+function:
+  name: omni-mcleod-fetch-orders-${self:provider.stage}
+  handler: src/fetch-orders.handler
+  description: Omni Mach1 Mcleod
+  timeout: 30
+  package:
+    patterns:
+      - "!**/*"
+      - "src/fetch-orders.js"
+      - "src/shared/**"
+  runtime: nodejs14.x
+  layers:
+    - { Ref: OmniMach1McleodLayerLambdaLayer }
+  environment:
+    GOOGLE_API_TOKEN: ${ssm:/omni-mach1-mcleod/google-api-endpoint~true}
+    MALEOD_API_ENDPOINT: ${ssm:/omni-mach1-mcleod/${self:provider.stage}/mcleod-api-endpoint~true}
+    MALEOD_API_TOKEN: ${ssm:/omni-mach1-mcleod/${self:provider.stage}/mcleod-api-token~true}
+    MALEOD_API_USERNAME: ${ssm:/omni-mach1-mcleod/${self:provider.stage}/mcleod-api-username~true}
+    MALEOD_API_PASSWORD: ${ssm:/omni-mach1-mcleod/${self:provider.stage}/mcleod-api-password~true}
+    # MALEOD_API_ENDPOINT: "https://lme.uat-mcleod.omnilogistics.com:5690/ws/"
+    # MALEOD_API_TOKEN: "bf2e0b10-7227-4a13-82a4-2b610587ef2d"
+  vpc:
+    securityGroupIds:
+    - ${ssm:/omni-dw/${self:provider.stage}/lambda/sgId}
+    subnetIds:
+    - ${ssm:/omni-dw/${self:provider.stage}/lambda/subnetA}

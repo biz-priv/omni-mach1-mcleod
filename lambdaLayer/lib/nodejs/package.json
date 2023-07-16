@@ -1,0 +1,19 @@
+{
+  "name": "fourkites-updates",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "aws-sdk": "^2.1333.0",
+    "axios": "^1.4.0",
+    "csvtojson": "^2.0.10",
+    "moment-timezone": "^0.5.43",
+    "request": "^2.88.2",
+    "uuid": "^9.0.0"
+  }
+}

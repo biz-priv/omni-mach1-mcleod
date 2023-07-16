@@ -1,0 +1,80 @@
+service: omni-mach1-mcleod
+
+plugins:
+  - serverless-step-functions
+
+provider:
+  name: aws
+  region: ${opt:region, 'us-east-1'}
+  stage: ${opt:stage, 'dev'}
+  versionFunctions: false
+  tags: ${self:custom.tags}
+  stackTags: ${self:custom.tags}
+  iamRoleStatements:
+    - Effect: "Allow"
+      Action:
+        - dynamodb:DescribeTable
+        - dynamodb:Query
+        - dynamodb:Scan
+        - dynamodb:GetItem
+        - dynamodb:PutItem
+        - dynamodb:UpdateItem
+        - dynamodb:DeleteItem
+      Resource: "*"
+    - Effect: "Allow"
+      Action:
+        - "s3:*"
+      Resource: "*"
+    - Effect: "Allow"
+      Action:
+        - "sns:Publish"
+      Resource: "*"
+  runtime: nodejs14.x
+  environment:
+    SERVICE: ${self:service}
+    REGION: ${self:custom.region}
+    STAGE: ${self:custom.stage}
+  deploymentBucket:
+    name: ${ssm:/omni-dw/${self:provider.stage}/sls/deployment/bucket}
+    serverSideEncryption: AES256
+
+custom:
+  region: ${opt:region, 'us-east-1'}
+  stage: ${opt:stage, 'dev'}
+  tags:
+    Application: OmniMach1Mcleod
+    CreateBy: BizCloudExperts
+    Environment: ${self:custom.stage}
+  logSubscription:
+    enabled: true
+
+package:
+  individually: true
+
+layers:
+  OmniMach1McleodLayer:
+    path: lambdaLayer/lib
+    name: ${self:service}-layer-${self:provider.stage}
+    description: Omni Mach1-Mcleod lambda layer for all node modules - ${self:provider.stage}
+    compatibleRuntimes:
+      - nodejs14.x
+    retain: false
+
+functions:
+  omni_m1_mcleod_csv_import: ${file(config/functions/mach1McleodCsvImportFucntion.yml):function}
+  omni_m1_mcleod_api: ${file(config/functions/mach1McleodApiFunction.yml):function}  
+  omni_mcleod_fetch_orders: ${file(config/functions/mcleodFetchOrders.yml):function}  
+
+stepFunctions:
+  ${file(config/stepfunctions/mcleodStateMachine.yml)}
+
+resources:
+  Resources: 
+    Mach1McleodUpdatetDLQ: ${file(config/sqs/mach1McleodUpdateQueue.yml):Mach1McleodUpdatetDLQ}
+    Mach1McleodUpdateQueue: ${file(config/sqs/mach1McleodUpdateQueue.yml):Mach1McleodUpdateQueue}
+    Mach1McleodUdpateQueuePolicy: ${file(config/sqs/mach1McleodUpdateQueue.yml):Mach1McleodUdpateQueuePolicy}
+    McleadApiSnsTopic : ${file(config/sns/mcleadApiSnsTopic.yml):McleadApiSnsTopic}
+    M1McleodDynamoTable: ${file(config/dynamodb/mach1McleodDynamoTable.yml):M1McleodDynamoTable}
+    McleodApiLogTable: ${file(config/dynamodb/mcleodApiLogTable.yml):McleodApiLogTable}
+
+

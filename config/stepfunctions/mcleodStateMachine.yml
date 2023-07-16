@@ -1,0 +1,24 @@
+stateMachines:
+  OmniMcleodStateMachine:
+    name: omni-mcleod-state-machine-${self:provider.stage}
+    events:
+      - schedule: rate(30 minutes)
+    definition:
+      StartAt: PublishEvents
+      States:
+        PublishEvents:
+          Type : Task
+          Resource : !GetAtt omni_mcleod_fetch_orders.Arn
+          Next: EndChoice
+        EndChoice:
+          Type: Choice
+          Choices:
+            - Variable: $.hasMoreData
+              StringEquals: "true"
+              Next: PublishEvents
+            - Variable: $.hasMoreData
+              StringEquals: "false"
+              Next: SuccessState
+          Default: SuccessState
+        SuccessState:
+          Type: Succeed

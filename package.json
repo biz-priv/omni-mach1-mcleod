@@ -1,0 +1,24 @@
+{
+  "name": "omni-mach1-mcleod",
+  "version": "1.0.0",
+  "description": "Mach1 to McLeod Order Creation API",
+  "main": "index.js",
+  "devDependencies": {
+    "serverless": "^2.72.3",
+    "serverless-offline": "^8.8.0",
+    "serverless-step-functions": "^3.11.1"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/bizcloud-experts/omni-mach1-mcleod.git"
+  },
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/bizcloud-experts/omni-mach1-mcleod/issues"
+  },
+  "homepage": "https://github.com/bizcloud-experts/omni-mach1-mcleod#readme"
+}

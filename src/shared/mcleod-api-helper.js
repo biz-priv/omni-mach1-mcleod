@@ -1,16 +1,15 @@
 const request = require('request');
 const axios = require('axios');
 
-// const auth = "Basic " + new Buffer(process.env.MALEOD_API_USERNAME + ":" + process.env.MALEOD_API_PASSWORD).toString("base64")
 const auth = {
     username : process.env.MALEOD_API_USERNAME,
     password : process.env.MALEOD_API_PASSWORD,
 }
-const token = process.env.MALEOD_API_TOKEN;
+const bearer_token = `Bearer ${process.env.MALEOD_API_TOKEN}`;
 const headers = {
     "Accept": "application/json",
     "Content-Type": "application/json",
-    // "verify": "False",
+    'Authorization': bearer_token
 };
 
 async function getNewOrder(bodyPayload) {
@@ -19,10 +18,11 @@ async function getNewOrder(bodyPayload) {
         uri: process.env.MALEOD_API_ENDPOINT + "orders/new",
         method: 'GET',
         headers: {
-            'Content-Type': 'application/json'
+            'Content-Type': 'application/json',
+            'Authorization': bearer_token
         },
         json : bodyPayload,
-        auth
+        // auth
     };
     return new Promise((resolve, reject) => {
         request(options, function (err, data, body) {
@@ -42,9 +42,11 @@ async function getOrderById( orderId ) {
         uri: process.env.MALEOD_API_ENDPOINT + `orders/${orderId}`,
         method: 'GET',
         headers: {
+            'Accept' : 'application/json',
             'Content-Type': 'application/json',
+            'Authorization': bearer_token
         },
-        auth
+        // auth
     };
     return new Promise((resolve, reject) => {
         request(options, function (err, data, body) {
@@ -64,10 +66,11 @@ async function postNewOrder(bodyPayload) {
         uri: process.env.MALEOD_API_ENDPOINT + "orders/create",
         method: 'PUT',
         headers: {
-            'Content-Type': 'application/json'
+            'Content-Type': 'application/json',
+            'Authorization': bearer_token
         },
         json : bodyPayload,
-        auth
+        // auth
     };
     return new Promise((resolve, reject) => {
         request(options, function (err, data, body) {
@@ -87,10 +90,11 @@ async function updateOrder(bodyPayload) {
         uri: process.env.MALEOD_API_ENDPOINT + "orders/update",
         method: 'PUT',
         headers: {
-            'Content-Type': 'application/json'
+            'Content-Type': 'application/json',
+            'Authorization': bearer_token
         },
         json : bodyPayload,
-        auth
+        // auth
     };
     return new Promise((resolve, reject) => {
         request(options, function (err, data, body) {

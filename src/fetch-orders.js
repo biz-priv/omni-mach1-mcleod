@@ -1,18 +1,7 @@
 const {getRegion, getZipcode, updateOrder, getOrdersWithoutConsignee, getOrdersWithoutShipper} = require("./shared/mcleod-api-helper")
 const {getZipcodeFromGoogle} = require("./shared/google-api-helper")
-const Joi = require('joi');
 
 const loop_count = 10;
-
-const schema = Joi.object({
-    location_id : Joi.string().required(),
-    showas_address : Joi.string().required(),
-    showas_location_name : Joi.string().required(),
-    showas_city_name : Joi.string().required(),
-    showas_city_id : Joi.string().required(),
-    showas_state : Joi.string().required(),
-    showas_zip_code : Joi.string().required(),
-})
 
 module.exports.handler = async (event, context) => {
   console.log("EVENT:", event);
@@ -42,10 +31,10 @@ module.exports.handler = async (event, context) => {
         orders[index].stops = arrangeStops(orders[index].stops);
 
         try {
-            var validate_pickup = schema.validate(orders[index].stops[0]);
-            var validate_del = schema.validate(orders[index].stops[length-1]);
-
-            if ( (validate_pickup.error || validate_del.error) && length >= 4 ) {
+            var pickup_stop_id = orders[index].stops[0].location_id;
+            var del_stop_id = orders[index].stops[length-1].location_id;
+    
+            if ( (!pickup_stop_id || !del_stop_id) && length >= 4 ) {
                 processedRecords++;
                 if ( length == 6 ) {
                     console.log(`Attempting to update ${order_id}, 6 stops`);
@@ -147,7 +136,7 @@ async function update_order_four_stops(order) {
 async function update_stops( stops ) {
     
     let updated_stops = [];
-    let needs_update = false;
+    let region_found = false;
     updated_stops = stops.map( item => { return {
         __type: "stop",
         __name: "stops",
@@ -173,7 +162,7 @@ async function update_stops( stops ) {
 
         if ( zipcode_response.statusCode < 200 || zipcode_response.statusCode >= 300) {
             console.log(`Error`, zipcode_response.body);
-            return {updated_stops, region_found: needs_update}
+            return {updated_stops, region_found}
         }
 
         let zipcodes = JSON.parse( zipcode_response.body );
@@ -196,12 +185,13 @@ async function update_stops( stops ) {
                         const element1 = locations[index2];
                         if ( element1.location_id[0] == "O") {
                             location_id = element1.location_id;
-                            needs_update = true;
+                            region_found = true;
                         }
                     }
                  }
             }
     
+
             updated_stops[0] = {
                 "__type": stops[0].__type,
                 "__name": stops[0].__name,
@@ -211,26 +201,17 @@ async function update_stops( stops ) {
                 "order_sequence": stops[0].order_sequence,
                 "sched_arrive_early": stops[0].sched_arrive_early
             }
-        }
-    } else {
-        updated_stops[0] = {
-            "__type": stops[0].__type,
-            "__name": stops[0].__name,
-            "company_id": stops[0].company_id,
-            "id": stops[0].id,
-            "location_id": location_id,
-            "order_sequence": stops[0].order_sequence,
-            "sched_arrive_early": stops[0].sched_arrive_early
+
+            if ( "sched_arrive_late" in stops[0] ) { updated_stops[0].sched_arrive_late = stops[0].sched_arrive_late }
+            if ( "address" in stops[0] ) { updated_stops[0].showas_address = stops[0].address }
+            if ( "location_name" in stops[0] ) { updated_stops[0].showas_location_name = stops[0].location_name }
+            if ( "city_name" in stops[0] ) { updated_stops[0].showas_city_name = stops[0].city_name }
+            if ( "city_id" in stops[0] ) { updated_stops[0].showas_city_id = stops[0].city_id }
+            if ( "state" in stops[0] ) { updated_stops[0].showas_state = stops[0].state }
+            if ( "zip_code" in stops[0] ) { updated_stops[0].showas_zip_code = stops[0].zip_code }
+
         }
     }
 
-    if ( "sched_arrive_late" in stops[0] ) { updated_stops[0].sched_arrive_late = stops[0].sched_arrive_late; needs_update = true }
-    if ( "address" in stops[0] ) { updated_stops[0].showas_address = stops[0].address; needs_update = true }
-    if ( "location_name" in stops[0] ) { updated_stops[0].showas_location_name = stops[0].location_name; needs_update = true }
-    if ( "city_name" in stops[0] ) { updated_stops[0].showas_city_name = stops[0].city_name; needs_update = true }
-    if ( "city_id" in stops[0] ) { updated_stops[0].showas_city_id = stops[0].city_id; needs_update = true }
-    if ( "state" in stops[0] ) { updated_stops[0].showas_state = stops[0].state; needs_update = true }
-    if ( "zip_code" in stops[0] ) { updated_stops[0].showas_zip_code = stops[0].zip_code; needs_update = true }
-
-    return {updated_stops, region_found: needs_update};
+    return {updated_stops, region_found};
 }

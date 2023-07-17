@@ -118,7 +118,7 @@ async function getOrdersWithoutShipper() {
         uri,
         method: "GET",
         headers,
-        auth
+        // auth
     };
     console.log("options", options);
     return new Promise((resolve, reject) => {
@@ -143,7 +143,7 @@ async function getOrdersWithoutConsignee() {
         uri,
         method: "GET",
         headers,
-        auth
+        // auth
     };
     console.log("options", options);
     return new Promise((resolve, reject) => {
@@ -166,7 +166,7 @@ async function getZipcode(zipcode) {
       uri,
       method: "GET",
       headers,
-      auth
+    //   auth
     };
 
     return new Promise((resolve, reject) => {
@@ -189,7 +189,7 @@ async function getRegion(reg_uid) {
       uri,
       method: "GET",
       headers,
-      auth
+    //   auth
     };
 
     return new Promise((resolve, reject) => {

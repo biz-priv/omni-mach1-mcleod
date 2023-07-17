@@ -212,4 +212,6 @@ async function update_stops( stops ) {
 
         }
     }
+
+    return {updated_stops, region_found};
 }

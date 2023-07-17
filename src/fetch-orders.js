@@ -46,7 +46,7 @@ module.exports.handler = async (event, context) => {
             var validate_pickup = schema.validate(orders[index].stops[0]);
             var validate_del = schema.validate(orders[index].stops[length-1]);
 
-            if ( (!validate_pickup.error || !validate_del.error) && length >= 4 ) {
+            if ( (validate_pickup.error || validate_del.error) && length >= 4 ) {
                 processedRecords++;
                 if ( length == 6 ) {
                     console.log(`Attempting to update ${order_id}, 6 stops`);

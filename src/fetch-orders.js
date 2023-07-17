@@ -158,6 +158,15 @@ async function update_stops( stops ) {
 
     let location_id = stops[0].location_id; 
     
+    updated_stops[0] = {
+        "__type": stops[0].__type,
+        "__name": stops[0].__name,
+        "company_id": stops[0].company_id,
+        "id": stops[0].id,
+        "order_sequence": stops[0].order_sequence,
+        "sched_arrive_early": stops[0].sched_arrive_early
+    }
+
     if ( !location_id ) {
         let {address, city_id, city_name, state, zip_code, location_name} = stops[0];
         if ( !location_name ) {
@@ -202,35 +211,41 @@ async function update_stops( stops ) {
                  }
             }
     
-            updated_stops[0] = {
-                "__type": stops[0].__type,
-                "__name": stops[0].__name,
-                "company_id": stops[0].company_id,
-                "id": stops[0].id,
-                "location_id": location_id,
-                "order_sequence": stops[0].order_sequence,
-                "sched_arrive_early": stops[0].sched_arrive_early
-            }
+            updated_stops[0].location_id = location_id;
+            needs_update = true;
+
+            if ( "sched_arrive_late" in stops[0] ) { updated_stops[0].sched_arrive_late = stops[0].sched_arrive_late; needs_update = true }
+            if ( "address" in stops[0] ) { updated_stops[0].showas_address = stops[0].address; needs_update = true }
+            if ( "location_name" in stops[0] ) { updated_stops[0].showas_location_name = stops[0].location_name; needs_update = true }
+            if ( "city_name" in stops[0] ) { updated_stops[0].showas_city_name = stops[0].city_name; needs_update = true }
+            if ( "city_id" in stops[0] ) { updated_stops[0].showas_city_id = stops[0].city_id; needs_update = true }
+            if ( "state" in stops[0] ) { updated_stops[0].showas_state = stops[0].state; needs_update = true }
+            if ( "zip_code" in stops[0] ) { updated_stops[0].showas_zip_code = stops[0].zip_code; needs_update = true }
         }
     } else {
-        updated_stops[0] = {
-            "__type": stops[0].__type,
-            "__name": stops[0].__name,
-            "company_id": stops[0].company_id,
-            "id": stops[0].id,
-            "location_id": location_id,
-            "order_sequence": stops[0].order_sequence,
-            "sched_arrive_early": stops[0].sched_arrive_early
-        }
-    }
+        updated_stops[0].location_id = location_id;
 
-    if ( "sched_arrive_late" in stops[0] ) { updated_stops[0].sched_arrive_late = stops[0].sched_arrive_late; needs_update = true }
-    if ( "address" in stops[0] ) { updated_stops[0].showas_address = stops[0].address; needs_update = true }
-    if ( "location_name" in stops[0] ) { updated_stops[0].showas_location_name = stops[0].location_name; needs_update = true }
-    if ( "city_name" in stops[0] ) { updated_stops[0].showas_city_name = stops[0].city_name; needs_update = true }
-    if ( "city_id" in stops[0] ) { updated_stops[0].showas_city_id = stops[0].city_id; needs_update = true }
-    if ( "state" in stops[0] ) { updated_stops[0].showas_state = stops[0].state; needs_update = true }
-    if ( "zip_code" in stops[0] ) { updated_stops[0].showas_zip_code = stops[0].zip_code; needs_update = true }
+        if ( "sched_arrive_late" in stops[0] ) { updated_stops[0].sched_arrive_late = stops[0].sched_arrive_late; needs_update = true }
+        if ( !("showas_address" in stops[0]) && ("address" in stops[0]) ) { 
+            updated_stops[0].showas_address = stops[0].address; needs_update = true 
+        }
+        if ( !("showas_location_name" in stops[0]) && ("address" in stops[0]) ) { 
+            updated_stops[0].showas_location_name = stops[0].location_name; needs_update = true 
+        }
+        if ( !("showas_city_name" in stops[0]) && ("address" in stops[0]) ) { 
+            updated_stops[0].showas_city_name = stops[0].city_name; needs_update = true 
+        }
+        if ( !("showas_city_id" in stops[0]) && ("address" in stops[0]) ) { 
+            updated_stops[0].showas_city_id = stops[0].city_id; needs_update = true 
+        }
+        if ( !("showas_state" in stops[0]) && ("address" in stops[0])) { 
+            updated_stops[0].showas_state = stops[0].state; needs_update = true 
+        }
+        if ( !("showas_zip_code" in stops[0]) && ("address" in stops[0]) ) { 
+            updated_stops[0].showas_zip_code = stops[0].zip_code; needs_update = true 
+        }
+
+    }
 
     return {updated_stops, region_found: needs_update};
 }

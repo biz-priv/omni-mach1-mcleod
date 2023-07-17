@@ -39,14 +39,13 @@ module.exports.handler = async (event, context) => {
         var order_id = orders[index].id;
         var length = orders[index].stops.length;
         
+        orders[index].stops = arrangeStops(orders[index].stops);
+
         try {
-            var pickup_stop_id = orders[index].stops[0].location_id;
-            var del_stop_id = orders[index].stops[length-1].location_id;
-    
             var validate_pickup = schema.validate(orders[index].stops[0]);
             var validate_del = schema.validate(orders[index].stops[length-1]);
 
-            if ( (!validate_pickup.error || !validate_del.error) && length >= 4 ) {
+            if ( (validate_pickup.error || validate_del.error) && length >= 4 ) {
                 processedRecords++;
                 if ( length == 6 ) {
                     console.log(`Attempting to update ${order_id}, 6 stops`);
@@ -77,6 +76,14 @@ module.exports.handler = async (event, context) => {
 
   return {hasMoreData : "false"};
 };
+
+function arrangeStops(stops) {
+    let updated_stops_sequence = [];
+    stops.forEach(stop => {
+        updated_stops_sequence[stop.order_sequence-1] = stop
+    });
+    return updated_stops_sequence;
+}
 
 async function update_order_six_stops(order) {
     let pickup_stops = order.stops.slice(0,3);
@@ -204,6 +211,16 @@ async function update_stops( stops ) {
                 "order_sequence": stops[0].order_sequence,
                 "sched_arrive_early": stops[0].sched_arrive_early
             }
+        }
+    } else {
+        updated_stops[0] = {
+            "__type": stops[0].__type,
+            "__name": stops[0].__name,
+            "company_id": stops[0].company_id,
+            "id": stops[0].id,
+            "location_id": location_id,
+            "order_sequence": stops[0].order_sequence,
+            "sched_arrive_early": stops[0].sched_arrive_early
         }
     }
 

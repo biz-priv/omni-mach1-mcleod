@@ -179,7 +179,7 @@ async function update_stops( stops ) {
                         return updated_stops
                     }
     
-                    let locations = JSON.parse(get_location_response.body);
+                    let locations = JSON.parse(get_location_response.body) ?? [];
     
                     for (let index2 = 0; index2 < locations.length; index2++) {
                         const element1 = locations[index2];

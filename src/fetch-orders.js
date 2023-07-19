@@ -19,7 +19,7 @@ module.exports.handler = async (event, context) => {
       return orders;
     }
 
-    orders = JSON.parse(getOrdersResponse.body);
+    orders = JSON.parse(getOrdersResponse.body) ?? [];
     console.log("Orders Length - ", orders.length);
 
     let processedRecords = 0, index = event.index ?? 0;
@@ -165,7 +165,7 @@ async function update_stops( stops ) {
             return {updated_stops, region_found}
         }
 
-        let zipcodes = JSON.parse( zipcode_response.body );
+        let zipcodes = JSON.parse( zipcode_response.body ) ?? [];
         if (zipcodes)  {
             for (let index = 0; index < zipcodes.length; index++) {
                 const element = zipcodes[index];
@@ -183,10 +183,11 @@ async function update_stops( stops ) {
     
                     for (let index2 = 0; index2 < locations.length; index2++) {
                         const element1 = locations[index2];
-                        if ( element1.location_id[0] == "O") {
-                            location_id = element1.location_id;
-                            region_found = true;
-                        }
+                        // if ( element1.location_id[0] == "O") {
+                        location_id = element1.location_id;
+                        region_found = true;
+                        break;
+                        // }
                     }
                  }
             }

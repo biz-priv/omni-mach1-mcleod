@@ -1,5 +1,7 @@
 const {getRegion, getZipcode, updateOrder, getOrdersWithoutConsignee, getOrdersWithoutShipper} = require("./shared/mcleod-api-helper")
 const {getZipcodeFromGoogle} = require("./shared/google-api-helper")
+const moment = require('moment-timezone');
+
 
 const loop_count = 10;
 
@@ -19,7 +21,7 @@ module.exports.handler = async (event, context) => {
       return orders;
     }
 
-    orders = JSON.parse(getOrdersResponse.body);
+    orders = JSON.parse(getOrdersResponse.body) ?? [];
     console.log("Orders Length - ", orders.length);
 
     let processedRecords = 0, index = event.index ?? 0;
@@ -159,17 +161,20 @@ async function update_stops( stops ) {
         }
 
         let zipcode_response = await getZipcode(zip_code);
+        console.log("zipcode_response", zipcode_response)
 
         if ( zipcode_response.statusCode < 200 || zipcode_response.statusCode >= 300) {
             console.log(`Error`, zipcode_response.body);
             return {updated_stops, region_found}
         }
 
-        let zipcodes = JSON.parse( zipcode_response.body );
+        let zipcodes = JSON.parse( zipcode_response.body ) ?? [];
         if (zipcodes)  {
             for (let index = 0; index < zipcodes.length; index++) {
                 const element = zipcodes[index];
-                if ( element.rxz_type_code == 'OPER' ) {
+                var expiry_date = moment(element.expire_timestamp, ["YYYYMMDDHHmmss"]);
+                
+                if ( element.rxz_type_code == 'OPER' && ( !expiry_date.isValid() || expiry_date.isAfter() ) ) {
                     let reg_uid = element.reg_uid_row.reg_uid;
     
                     let get_location_response = await getRegion(reg_uid);
@@ -179,14 +184,18 @@ async function update_stops( stops ) {
                         return updated_stops
                     }
     
-                    let locations = JSON.parse(get_location_response.body);
+                    let locations = JSON.parse(get_location_response.body) ?? [];
     
                     for (let index2 = 0; index2 < locations.length; index2++) {
                         const element1 = locations[index2];
-                        if ( element1.location_id[0] == "O") {
-                            location_id = element1.location_id;
-                            region_found = true;
-                        }
+                        // if ( element1.location_id[0] == "O") {
+                        location_id = element1.location_id;
+                        region_found = true;
+                        break;
+                        // }
+                    }
+                    if (region_found) {
+                        break;
                     }
                  }
             }

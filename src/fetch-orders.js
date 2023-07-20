@@ -15,11 +15,11 @@ module.exports.handler = async (event, context) => {
       getOrdersResponse.statusCode < 200 ||
       getOrdersResponse.statusCode >= 300
     ) {
-      console.log(`Error`, getOrdersResponse.body);
+      console.log(`Error`, getOrdersResponse);
       return orders;
     }
 
-    orders = JSON.parse(getOrdersResponse.body);
+    orders = JSON.parse(getOrdersResponse.body) ?? [];
     console.log("Orders Length - ", orders.length);
 
     let processedRecords = 0, index = event.index ?? 0;
@@ -28,6 +28,8 @@ module.exports.handler = async (event, context) => {
         var order_id = orders[index].id;
         var length = orders[index].stops.length;
         
+        orders[index].stops = arrangeStops(orders[index].stops);
+
         try {
             var pickup_stop_id = orders[index].stops[0].location_id;
             var del_stop_id = orders[index].stops[length-1].location_id;
@@ -63,6 +65,14 @@ module.exports.handler = async (event, context) => {
 
   return {hasMoreData : "false"};
 };
+
+function arrangeStops(stops) {
+    let updated_stops_sequence = [];
+    stops.forEach(stop => {
+        updated_stops_sequence[stop.order_sequence-1] = stop
+    });
+    return updated_stops_sequence;
+}
 
 async function update_order_six_stops(order) {
     let pickup_stops = order.stops.slice(0,3);
@@ -155,7 +165,7 @@ async function update_stops( stops ) {
             return {updated_stops, region_found}
         }
 
-        let zipcodes = JSON.parse( zipcode_response.body );
+        let zipcodes = JSON.parse( zipcode_response.body ) ?? [];
         if (zipcodes)  {
             for (let index = 0; index < zipcodes.length; index++) {
                 const element = zipcodes[index];
@@ -169,14 +179,15 @@ async function update_stops( stops ) {
                         return updated_stops
                     }
     
-                    let locations = JSON.parse(get_location_response.body);
+                    let locations = JSON.parse(get_location_response.body) ?? [];
     
                     for (let index2 = 0; index2 < locations.length; index2++) {
                         const element1 = locations[index2];
-                        if ( element1.location_id[0] == "O") {
-                            location_id = element1.location_id;
-                            region_found = true;
-                        }
+                        // if ( element1.location_id[0] == "O") {
+                        location_id = element1.location_id;
+                        region_found = true;
+                        break;
+                        // }
                     }
                  }
             }

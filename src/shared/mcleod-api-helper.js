@@ -1,11 +1,15 @@
 const request = require('request');
+const axios = require('axios');
 
-const token = process.env.MALEOD_API_TOKEN;
+const auth = {
+    username : process.env.MALEOD_API_USERNAME,
+    password : process.env.MALEOD_API_PASSWORD,
+}
+const bearer_token = `Bearer ${process.env.MALEOD_API_TOKEN}`;
 const headers = {
     "Accept": "application/json",
     "Content-Type": "application/json",
-    "Authorization": `Bearer ${token}`,
-    "verify": "False",
+    'Authorization': bearer_token
 };
 
 async function getNewOrder(bodyPayload) {
@@ -15,9 +19,10 @@ async function getNewOrder(bodyPayload) {
         method: 'GET',
         headers: {
             'Content-Type': 'application/json',
-            'Authorization': `Bearer ${process.env.MALEOD_API_TOKEN}`
+            'Authorization': bearer_token
         },
-        json : bodyPayload
+        json : bodyPayload,
+        // auth
     };
     return new Promise((resolve, reject) => {
         request(options, function (err, data, body) {
@@ -39,8 +44,9 @@ async function getOrderById( orderId ) {
         headers: {
             'Accept' : 'application/json',
             'Content-Type': 'application/json',
-            'Authorization': `Bearer ${process.env.MALEOD_API_TOKEN}`
-        }
+            'Authorization': bearer_token
+        },
+        // auth
     };
     return new Promise((resolve, reject) => {
         request(options, function (err, data, body) {
@@ -61,9 +67,10 @@ async function postNewOrder(bodyPayload) {
         method: 'PUT',
         headers: {
             'Content-Type': 'application/json',
-            'Authorization': `Bearer ${process.env.MALEOD_API_TOKEN}`
+            'Authorization': bearer_token
         },
-        json : bodyPayload
+        json : bodyPayload,
+        // auth
     };
     return new Promise((resolve, reject) => {
         request(options, function (err, data, body) {
@@ -84,9 +91,10 @@ async function updateOrder(bodyPayload) {
         method: 'PUT',
         headers: {
             'Content-Type': 'application/json',
-            'Authorization': `Bearer ${process.env.MALEOD_API_TOKEN}`
+            'Authorization': bearer_token
         },
-        json : bodyPayload
+        json : bodyPayload,
+        // auth
     };
     return new Promise((resolve, reject) => {
         request(options, function (err, data, body) {
@@ -110,7 +118,9 @@ async function getOrdersWithoutShipper() {
         uri,
         method: "GET",
         headers,
+        // auth
     };
+    console.log("options", options);
     return new Promise((resolve, reject) => {
         request(options, function (err, data, body) {
         if (err) {
@@ -133,7 +143,9 @@ async function getOrdersWithoutConsignee() {
         uri,
         method: "GET",
         headers,
+        // auth
     };
+    console.log("options", options);
     return new Promise((resolve, reject) => {
         request(options, function (err, data, body) {
         if (err) {
@@ -154,6 +166,7 @@ async function getZipcode(zipcode) {
       uri,
       method: "GET",
       headers,
+    //   auth
     };
 
     return new Promise((resolve, reject) => {
@@ -176,6 +189,7 @@ async function getRegion(reg_uid) {
       uri,
       method: "GET",
       headers,
+    //   auth
     };
 
     return new Promise((resolve, reject) => {
@@ -189,30 +203,6 @@ async function getRegion(reg_uid) {
         });
     });
 }
-
-// async function update_order(bodyPayload) {
-//     process.env["NODE_TLS_REJECT_UNAUTHORIZED"] = 0;
-
-//     //TODO - SSM
-//     var uri = `${process.env.MALEOD_API_ENDPOINT}orders/update`
-//     let options = {
-//       uri,
-//       method: "PUT",
-//       headers,
-//       json : bodyPayload
-//     };
-
-//     return new Promise((resolve, reject) => {
-//         request(options, function (err, data, body) {
-//             if (err) {
-//                 console.log("Error", err);
-//                 reject(err);
-//             } else {
-//                 resolve({ statusCode: data.statusCode, body });
-//             }
-//         });
-//     });
-// }
 
 module.exports = {
     getNewOrder,

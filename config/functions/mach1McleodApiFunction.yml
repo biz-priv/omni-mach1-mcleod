@@ -18,6 +18,8 @@ function:
     MACH1_MALEOD_TABLE: ${ssm:/omni-mach1-mcleod/${self:provider.stage}/mach1-mcleod/ddb.tableName~true}
     MALEOD_API_LOG_TABLE: ${ssm:/omni-mach1-mcleod/${self:provider.stage}/mcleod-api-plog/ddb.tableName~true}
     MALEOD_API_ENDPOINT: ${ssm:/omni-mach1-mcleod/${self:provider.stage}/mcleod-api-endpoint~true}
+    MALEOD_API_USERNAME: ${ssm:/omni-mach1-mcleod/${self:provider.stage}/mcleod-api-username~true}
+    MALEOD_API_PASSWORD: ${ssm:/omni-mach1-mcleod/${self:provider.stage}/mcleod-api-password~true}
     MALEOD_API_TOKEN: ${ssm:/omni-mach1-mcleod/${self:provider.stage}/mcleod-api-token~true}
     MALEOD_API_TOPIC_ARN: !Ref McleadApiSnsTopic
     TIMEZONE_TABLE: ${ssm:/omni-wt-rt/airport-timezone/ddb.tableName~true}

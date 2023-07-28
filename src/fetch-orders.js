@@ -58,15 +58,14 @@ module.exports.handler = async (event, context) => {
     }
 
     if (orders.length - index > 0) {
-        return { hasMoreData: "true", index, isConsignee };
+        return { hasMoreData: "true", index, isConsignee, errors };
     } else {
         if ( !isConsignee ) {
-            return { hasMoreData: "true", index : 0, isConsignee : true };
-        }
-        if (errors.length > 0) {
+            return { hasMoreData: "true", index : 0, isConsignee : true, errors };
+        } else {
             sendMessageToSNS()
         }
-        return { hasMoreData: "false", index, isConsignee };
+        return { hasMoreData: "false", index, isConsignee, errors };
     }
   } catch (e) {
     console.log(e);

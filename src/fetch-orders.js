@@ -24,7 +24,7 @@ module.exports.handler = async (event, context) => {
     //   return orders;
     }
 
-    orders = JSON.parse(getOrdersResponse.body) ?? [];
+    orders = getOrdersResponse.body ? JSON.parse(getOrdersResponse.body) : [];
     console.log("Orders Length - ", orders.length);
 
     let processedRecords = 0, index = event.index ?? 0;

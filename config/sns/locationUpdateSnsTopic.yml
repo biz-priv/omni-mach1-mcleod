@@ -1,0 +1,4 @@
+LocationUpdateSnsTopic:
+  Type: AWS::SNS::Topic
+  Properties:
+    TopicName: omni-mcleod-location-update-topic-${self:provider.stage}

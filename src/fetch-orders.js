@@ -4,12 +4,14 @@ const moment = require('moment-timezone');
 
 
 const loop_count = 10;
+var errors = []
 
 module.exports.handler = async (event, context) => {
   console.log("EVENT:", event);
 
   try {
     let orders = [];
+    errors = event.errors ?? [];
     let isConsignee = event.isConsignee ?? false;
     let getOrdersResponse = isConsignee ? await getOrdersWithoutConsignee() : await getOrdersWithoutShipper();
 
@@ -18,6 +20,7 @@ module.exports.handler = async (event, context) => {
       getOrdersResponse.statusCode >= 300
     ) {
       console.log(`Error`, getOrdersResponse);
+      errors.push(`Error in fetching orders - ${JSON.stringify(getOrdersResponse)}`);
       return orders;
     }
 
@@ -50,6 +53,7 @@ module.exports.handler = async (event, context) => {
             }
         } catch(e) {
             console.log(`Error updating ${order_id}`)
+            errors.push(`Error updating ${order_id} - ${e}`);
         }
     }
 
@@ -58,6 +62,9 @@ module.exports.handler = async (event, context) => {
     } else {
         if ( !isConsignee ) {
             return { hasMoreData: "true", index : 0, isConsignee : true };
+        }
+        if (errors.length > 0) {
+            sendMessageToSNS()
         }
         return { hasMoreData: "false", index, isConsignee };
     }
@@ -223,4 +230,26 @@ async function update_stops( stops ) {
     }
 
     return {updated_stops, region_found};
+}
+
+async function sendMessageToSNS( ) {
+    if ( messages.length > 0 ) {
+
+        let message = `
+        The following api calls failed during the last execution
+        ${errors.join('\n\t')}
+        `
+
+        var params = {
+            Message: message,
+            TopicArn: process.env.LOCATION_UPDATE_TOPIC_ARN,
+            Subject: `${process.env.API_ENVIRONMENT.toUpperCase()} - Location Update Failures`
+        };
+        var publishTextPromise = new AWS.SNS({apiVersion: '2010-03-31'}).publish(params).promise();
+    
+        await publishTextPromise.then().catch(
+            function(err) {
+            console.error(err, err.stack);
+          });
+    }
 }

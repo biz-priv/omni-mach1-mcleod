@@ -1,6 +1,7 @@
 const {getRegion, getZipcode, updateOrder, getOrdersWithoutConsignee, getOrdersWithoutShipper} = require("./shared/mcleod-api-helper")
 const {getZipcodeFromGoogle} = require("./shared/google-api-helper")
 const moment = require('moment-timezone');
+const AWS = require('aws-sdk');
 
 
 const loop_count = 10;

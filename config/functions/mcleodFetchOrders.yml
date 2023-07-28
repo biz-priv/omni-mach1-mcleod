@@ -12,6 +12,7 @@ function:
   layers:
     - { Ref: OmniMach1McleodLayerLambdaLayer }
   environment:
+    API_ENVIRONMENT: ${self:provider.stage}
     GOOGLE_API_TOKEN: ${ssm:/omni-mach1-mcleod/google-api-endpoint~true}
     MALEOD_API_ENDPOINT: ${ssm:/omni-mach1-mcleod/${self:provider.stage}/mcleod-api-endpoint~true}
     MALEOD_API_TOKEN: ${ssm:/omni-mach1-mcleod/${self:provider.stage}/mcleod-api-token~true}

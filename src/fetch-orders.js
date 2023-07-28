@@ -232,7 +232,7 @@ async function update_stops( stops ) {
 }
 
 async function sendMessageToSNS( ) {
-    if ( messages.length > 0 ) {
+    if ( errors.length > 0 ) {
 
         let message = `
         The following api calls failed during the last execution

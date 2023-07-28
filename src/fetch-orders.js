@@ -21,7 +21,7 @@ module.exports.handler = async (event, context) => {
     ) {
       console.log(`Error`, getOrdersResponse);
       errors.push(`Error in fetching orders - ${JSON.stringify(getOrdersResponse)}`);
-      return orders;
+    //   return orders;
     }
 
     orders = JSON.parse(getOrdersResponse.body) ?? [];

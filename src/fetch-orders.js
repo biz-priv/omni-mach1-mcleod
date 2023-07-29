@@ -53,18 +53,19 @@ module.exports.handler = async (event, context) => {
               console.log(`No need to update ${order_id}`);
             }
         } catch(e) {
-            console.log(`Error updating ${order_id}`)
             errors.push(`Error updating ${order_id} - ${e}`);
+            console.log(`Error updating ${order_id}`)
         }
     }
 
     if (orders.length - index > 0) {
         return { hasMoreData: "true", index, isConsignee, errors };
     } else {
+        console.log("errors", errors)
         if ( !isConsignee ) {
             return { hasMoreData: "true", index : 0, isConsignee : true, errors };
         } else {
-            sendMessageToSNS()
+            await sendMessageToSNS()
         }
         return { hasMoreData: "false", index, isConsignee, errors };
     }
@@ -90,7 +91,7 @@ async function update_order_six_stops(order) {
     let updated_pickup_stops = await update_stops(pickup_stops);    
     let updated_delivery_stops = await update_stops(delivery_stops.reverse());
     
-    if ( updated_pickup_stops.region_found || updated_delivery_stops.region_found ) {
+    if ( updated_pickup_stops.region_found || updated_delivery_stops.region_found || true ) {
         let update_payload = {
             __name: "orders",
             __type: "orders",
@@ -103,6 +104,7 @@ async function update_order_six_stops(order) {
         let update_stops_response = await updateOrder(update_payload);
         
         if ( update_stops_response.statusCode < 200 || update_stops_response.statusCode >= 300) {
+            errors.push(`Error updating ${order_id} - ${JSON.stringify(update_stops_response)}`);
             console.log(`Error updating ${order.id}`, update_stops_response.body);
         } else {
             console.log(`Success updating ${order.id}`);
@@ -120,7 +122,7 @@ async function update_order_four_stops(order) {
     let updated_pickup_stops = await update_stops(pickup_stops);    
     let updated_delivery_stops = await update_stops(delivery_stops.reverse());
     
-    if ( updated_pickup_stops.region_found || updated_delivery_stops.region_found ) {
+    if ( updated_pickup_stops.region_found || updated_delivery_stops.region_found || true ) {
         let update_payload = {
             __name: "orders",
             __type: "orders",
@@ -133,6 +135,7 @@ async function update_order_four_stops(order) {
         let update_stops_response = await updateOrder(update_payload);
         
         if ( update_stops_response.statusCode < 200 || update_stops_response.statusCode >= 300) {
+            errors.push(`Error updating ${order.id} - ${JSON.stringify(update_stops_response)}`);
             console.log(`Error updating ${order.id}`, update_stops_response.body);
         } else {
             console.log(`Success updating ${order.id}`);

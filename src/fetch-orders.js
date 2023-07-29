@@ -104,7 +104,7 @@ async function update_order_six_stops(order) {
         let update_stops_response = await updateOrder(update_payload);
         
         if ( update_stops_response.statusCode < 200 || update_stops_response.statusCode >= 300) {
-            errors.push(`Error updating ${order_id} - ${JSON.stringify(update_stops_response)}`);
+            errors.push(`Error updating ${order.id} - ${JSON.stringify(update_stops_response)}`);
             console.log(`Error updating ${order.id}`, update_stops_response.body);
         } else {
             console.log(`Success updating ${order.id}`);

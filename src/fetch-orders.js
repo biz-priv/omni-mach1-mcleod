@@ -1,15 +1,18 @@
 const {getRegion, getZipcode, updateOrder, getOrdersWithoutConsignee, getOrdersWithoutShipper} = require("./shared/mcleod-api-helper")
 const {getZipcodeFromGoogle} = require("./shared/google-api-helper")
 const moment = require('moment-timezone');
+const AWS = require('aws-sdk');
 
 
 const loop_count = 10;
+var errors = []
 
 module.exports.handler = async (event, context) => {
   console.log("EVENT:", event);
 
   try {
     let orders = [];
+    errors = event.errors ?? [];
     let isConsignee = event.isConsignee ?? false;
     let getOrdersResponse = isConsignee ? await getOrdersWithoutConsignee() : await getOrdersWithoutShipper();
 
@@ -18,10 +21,11 @@ module.exports.handler = async (event, context) => {
       getOrdersResponse.statusCode >= 300
     ) {
       console.log(`Error`, getOrdersResponse);
-      return orders;
+      errors.push(`Error in fetching orders - ${JSON.stringify(getOrdersResponse)}`);
+    //   return orders;
     }
 
-    orders = JSON.parse(getOrdersResponse.body) ?? [];
+    orders = getOrdersResponse.body ? JSON.parse(getOrdersResponse.body) : [];
     console.log("Orders Length - ", orders.length);
 
     let processedRecords = 0, index = event.index ?? 0;
@@ -49,17 +53,21 @@ module.exports.handler = async (event, context) => {
               console.log(`No need to update ${order_id}`);
             }
         } catch(e) {
+            errors.push(`Error updating ${order_id} - ${e}`);
             console.log(`Error updating ${order_id}`)
         }
     }
 
     if (orders.length - index > 0) {
-        return { hasMoreData: "true", index, isConsignee };
+        return { hasMoreData: "true", index, isConsignee, errors };
     } else {
+        console.log("errors", errors)
         if ( !isConsignee ) {
-            return { hasMoreData: "true", index : 0, isConsignee : true };
+            return { hasMoreData: "true", index : 0, isConsignee : true, errors };
+        } else {
+            await sendMessageToSNS()
         }
-        return { hasMoreData: "false", index, isConsignee };
+        return { hasMoreData: "false", index, isConsignee, errors };
     }
   } catch (e) {
     console.log(e);
@@ -96,6 +104,7 @@ async function update_order_six_stops(order) {
         let update_stops_response = await updateOrder(update_payload);
         
         if ( update_stops_response.statusCode < 200 || update_stops_response.statusCode >= 300) {
+            errors.push(`Error updating ${order.id} - ${JSON.stringify(update_stops_response)}`);
             console.log(`Error updating ${order.id}`, update_stops_response.body);
         } else {
             console.log(`Success updating ${order.id}`);
@@ -126,6 +135,7 @@ async function update_order_four_stops(order) {
         let update_stops_response = await updateOrder(update_payload);
         
         if ( update_stops_response.statusCode < 200 || update_stops_response.statusCode >= 300) {
+            errors.push(`Error updating ${order.id} - ${JSON.stringify(update_stops_response)}`);
             console.log(`Error updating ${order.id}`, update_stops_response.body);
         } else {
             console.log(`Success updating ${order.id}`);
@@ -223,4 +233,26 @@ async function update_stops( stops ) {
     }
 
     return {updated_stops, region_found};
+}
+
+async function sendMessageToSNS( ) {
+    if ( errors.length > 0 ) {
+
+        let message = `
+        The following api calls failed during the last execution
+        ${errors.join('\n\t')}
+        `
+
+        var params = {
+            Message: message,
+            TopicArn: process.env.LOCATION_UPDATE_TOPIC_ARN,
+            Subject: `${process.env.API_ENVIRONMENT.toUpperCase()} - Location Update Failures`
+        };
+        var publishTextPromise = new AWS.SNS({apiVersion: '2010-03-31'}).publish(params).promise();
+    
+        await publishTextPromise.then().catch(
+            function(err) {
+            console.error(err, err.stack);
+          });
+    }
 }

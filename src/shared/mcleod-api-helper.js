@@ -112,7 +112,7 @@ async function getOrdersWithoutShipper() {
     process.env["NODE_TLS_REJECT_UNAUTHORIZED"] = 0;
 
     var uri =
-        `${process.env.MALEOD_API_ENDPOINT}orders/search?status=A&shipper.location_id==&recordLength=1000`;
+        `${process.env.MALEOD_API_ENDPOINT}orders/search?shipper.location_id==&recordLength=1000`;
 
     let options = {
         uri,
@@ -137,7 +137,7 @@ async function getOrdersWithoutConsignee() {
     process.env["NODE_TLS_REJECT_UNAUTHORIZED"] = 0;
 
     var uri =
-        `${process.env.MALEOD_API_ENDPOINT}orders/search?status=A&consignee.location_id==&recordLength=1000`;
+        `${process.env.MALEOD_API_ENDPOINT}orders/search?consignee.location_id==&recordLength=1000`;
 
     let options = {
         uri,

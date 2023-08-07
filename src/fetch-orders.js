@@ -2,7 +2,8 @@ const {getRegion, getZipcode, updateOrder, getOrdersWithoutConsignee, getOrdersW
 const {getZipcodeFromGoogle} = require("./shared/google-api-helper")
 const moment = require('moment-timezone');
 const AWS = require('aws-sdk');
-
+const { v4: uuidv4 } = require("uuid");
+const { putItem } = require('./shared/dynamodb');
 
 const loop_count = 10;
 var errors = []
@@ -256,5 +257,16 @@ async function sendMessageToSNS( ) {
             function(err) {
             console.error(err, err.stack);
           });
+    }
+}
+
+async function addErrosToTable() {
+    if ( errors.length > 0 ) {
+        let logObj = {
+            id: uuidv4(),
+            errors : errors,
+            inserted_time_stamp : moment.tz("America/Chicago").format("YYYY-MM-DD HH:mm:ss").toString()
+        }
+        await putItem(process.env.LOCATION_ERRORS_TABLE, logObj);
     }
 }

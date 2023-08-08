@@ -8,6 +8,13 @@ const { putItem } = require('./shared/dynamodb');
 const loop_count = 10;
 var errors = []
 
+const DATE_FORMAT = "YYYY-MM-DD HH:mm:ss"
+const logFrequency = {
+    "prod" : 2,
+    "uat" : 30,
+    "dev" : 30
+}
+
 module.exports.handler = async (event, context) => {
   console.log("EVENT:", event);
 
@@ -66,6 +73,7 @@ module.exports.handler = async (event, context) => {
         if ( !isConsignee ) {
             return { hasMoreData: "true", index : 0, isConsignee : true, errors };
         } else {
+            await saveErrors()
             await sendMessageToSNS()
         }
         return { hasMoreData: "false", index, isConsignee, errors };
@@ -239,34 +247,61 @@ async function update_stops( stops ) {
 }
 
 async function sendMessageToSNS( ) {
+
+    let endTime = moment()
+    let errorRecords = getErrors( endTime.subtract(1,'h').format(DATE_FORMAT), endTime.format(DATE_FORMAT) )
+    console.log("errorRecords", errorRecords);
+
     if ( errors.length > 0 ) {
 
-        let message = `
-        The following api calls failed during the last execution
-        ${errors.join('\n\t')}
-        `
+        // let message = `
+        // The following api calls failed during the last execution
+        // ${errors.join('\n\t')}
+        // `
 
-        var params = {
-            Message: message,
-            TopicArn: process.env.LOCATION_UPDATE_TOPIC_ARN,
-            Subject: `${process.env.API_ENVIRONMENT.toUpperCase()} - Location Update Failures`
-        };
-        var publishTextPromise = new AWS.SNS({apiVersion: '2010-03-31'}).publish(params).promise();
+        // var params = {
+        //     Message: message,
+        //     TopicArn: process.env.LOCATION_UPDATE_TOPIC_ARN,
+        //     Subject: `${process.env.API_ENVIRONMENT.toUpperCase()} - Location Update Failures`
+        // };
+        // var publishTextPromise = new AWS.SNS({apiVersion: '2010-03-31'}).publish(params).promise();
     
-        await publishTextPromise.then().catch(
-            function(err) {
-            console.error(err, err.stack);
-          });
+        // await publishTextPromise.then().catch(
+        //     function(err) {
+        //     console.error(err, err.stack);
+        //   });
     }
 }
 
-async function addErrosToTable() {
+async function saveErrors() {
     if ( errors.length > 0 ) {
         let logObj = {
             id: uuidv4(),
             errors : errors,
-            inserted_time_stamp : moment.tz("America/Chicago").format("YYYY-MM-DD HH:mm:ss").toString()
+            inserted_time_stamp : moment.tz("America/Chicago").format(DATE_FORMAT).toString()
         }
         await putItem(process.env.LOCATION_ERRORS_TABLE, logObj);
     }
 }
+
+async function getErrors(startDate, endDate) {
+    try {
+      const documentClient = new AWS.DynamoDB.DocumentClient({
+        region: process.env.REGION,
+      });
+      const params = {
+        TableName: process.env.LOCATION_ERRORS_TABLE,
+        FilterExpression: "#Timestamp BETWEEN :StartDate AND :EndDate ",
+        ExpressionAttributeNames: { "#Timestamp": "inserted_time_stamp" },
+        ExpressionAttributeValues: {
+          ":StartDate": startDate,
+          ":EndDate": endDate,
+        },
+      };
+      const response = await documentClient.scan(params).promise();
+      return response.Items;
+    } catch (e) {
+      throw e.hasOwnProperty("message") ? e.message : e;
+    }
+  }
+  

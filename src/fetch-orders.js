@@ -248,28 +248,32 @@ async function update_stops( stops ) {
 
 async function sendMessageToSNS( ) {
 
-    let endTime = moment()
-    let errorRecords = getErrors( endTime.subtract(1,'h').format(DATE_FORMAT), endTime.format(DATE_FORMAT) )
-    console.log("errorRecords", errorRecords);
+    let endTime = moment().tz("America/Chicago")
+    let errorRecords = await getErrors( moment(endTime).add(-1,'h').format(DATE_FORMAT), endTime.format(DATE_FORMAT) )
+    let setOfErrors = new Set();
+    errorRecords.forEach( (item) => {
+        item.errors.forEach(error => setOfErrors.add(error))
+    } )
+    console.log("setOfErrors", setOfErrors);
 
-    if ( errors.length > 0 ) {
+    if ( setOfErrors.size > 0 && endTime.minute() < logFrequency[process.env.API_ENVIRONMENT] ) {
 
-        // let message = `
-        // The following api calls failed during the last execution
-        // ${errors.join('\n\t')}
-        // `
+        let message = `
+        The following api calls failed during the last hour
+        ${Array.from(setOfErrors).join('\n\t')}
+        `
 
-        // var params = {
-        //     Message: message,
-        //     TopicArn: process.env.LOCATION_UPDATE_TOPIC_ARN,
-        //     Subject: `${process.env.API_ENVIRONMENT.toUpperCase()} - Location Update Failures`
-        // };
-        // var publishTextPromise = new AWS.SNS({apiVersion: '2010-03-31'}).publish(params).promise();
+        var params = {
+            Message: message,
+            TopicArn: process.env.LOCATION_UPDATE_TOPIC_ARN,
+            Subject: `${process.env.API_ENVIRONMENT.toUpperCase()} - Location Update Failures`
+        };
+        var publishTextPromise = new AWS.SNS({apiVersion: '2010-03-31'}).publish(params).promise();
     
-        // await publishTextPromise.then().catch(
-        //     function(err) {
-        //     console.error(err, err.stack);
-        //   });
+        await publishTextPromise.then().catch(
+            function(err) {
+            console.error(err, err.stack);
+          });
     }
 }
 
@@ -291,17 +295,18 @@ async function getErrors(startDate, endDate) {
       });
       const params = {
         TableName: process.env.LOCATION_ERRORS_TABLE,
-        FilterExpression: "#Timestamp BETWEEN :StartDate AND :EndDate ",
-        ExpressionAttributeNames: { "#Timestamp": "inserted_time_stamp" },
+        FilterExpression: "#inserted_time_stamp BETWEEN :StartDate AND :EndDate ",
+        ExpressionAttributeNames: { "#inserted_time_stamp": "inserted_time_stamp" },
         ExpressionAttributeValues: {
           ":StartDate": startDate,
           ":EndDate": endDate,
         },
       };
+      console.log("params", params)
       const response = await documentClient.scan(params).promise();
       return response.Items;
     } catch (e) {
       throw e.hasOwnProperty("message") ? e.message : e;
     }
-  }
+}
   

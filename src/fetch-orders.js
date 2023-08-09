@@ -2,10 +2,18 @@ const {getRegion, getZipcode, updateOrder, getOrdersWithoutConsignee, getOrdersW
 const {getZipcodeFromGoogle} = require("./shared/google-api-helper")
 const moment = require('moment-timezone');
 const AWS = require('aws-sdk');
-
+const { v4: uuidv4 } = require("uuid");
+const { putItem } = require('./shared/dynamodb');
 
 const loop_count = 10;
 var errors = []
+
+const DATE_FORMAT = "YYYY-MM-DD HH:mm:ss"
+const logFrequency = {
+    "prod" : 2,
+    "uat" : 30,
+    "dev" : 30
+}
 
 module.exports.handler = async (event, context) => {
   console.log("EVENT:", event);
@@ -65,6 +73,7 @@ module.exports.handler = async (event, context) => {
         if ( !isConsignee ) {
             return { hasMoreData: "true", index : 0, isConsignee : true, errors };
         } else {
+            await saveErrors()
             await sendMessageToSNS()
         }
         return { hasMoreData: "false", index, isConsignee, errors };
@@ -238,11 +247,20 @@ async function update_stops( stops ) {
 }
 
 async function sendMessageToSNS( ) {
-    if ( errors.length > 0 ) {
+
+    let endTime = moment().tz("America/Chicago")
+    let errorRecords = await getErrors( moment(endTime).add(-1,'h').format(DATE_FORMAT), endTime.format(DATE_FORMAT) )
+    let setOfErrors = new Set();
+    errorRecords.forEach( (item) => {
+        item.errors.forEach(error => setOfErrors.add(error))
+    } )
+    console.log("setOfErrors", setOfErrors);
+
+    if ( setOfErrors.size > 0 && endTime.minute() < logFrequency[process.env.API_ENVIRONMENT] ) {
 
         let message = `
-        The following api calls failed during the last execution
-        ${errors.join('\n\t')}
+        The following api calls failed during the last hour
+        ${Array.from(setOfErrors).join('\n\t')}
         `
 
         var params = {
@@ -258,3 +276,37 @@ async function sendMessageToSNS( ) {
           });
     }
 }
+
+async function saveErrors() {
+    if ( errors.length > 0 ) {
+        let logObj = {
+            id: uuidv4(),
+            errors : errors,
+            inserted_time_stamp : moment.tz("America/Chicago").format(DATE_FORMAT).toString()
+        }
+        await putItem(process.env.LOCATION_ERRORS_TABLE, logObj);
+    }
+}
+
+async function getErrors(startDate, endDate) {
+    try {
+      const documentClient = new AWS.DynamoDB.DocumentClient({
+        region: process.env.REGION,
+      });
+      const params = {
+        TableName: process.env.LOCATION_ERRORS_TABLE,
+        FilterExpression: "#inserted_time_stamp BETWEEN :StartDate AND :EndDate ",
+        ExpressionAttributeNames: { "#inserted_time_stamp": "inserted_time_stamp" },
+        ExpressionAttributeValues: {
+          ":StartDate": startDate,
+          ":EndDate": endDate,
+        },
+      };
+      console.log("params", params)
+      const response = await documentClient.scan(params).promise();
+      return response.Items;
+    } catch (e) {
+      throw e.hasOwnProperty("message") ? e.message : e;
+    }
+}
+  

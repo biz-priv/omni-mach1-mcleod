@@ -77,5 +77,6 @@ resources:
     LocationUpdateSnsTopic : ${file(config/sns/locationUpdateSnsTopic.yml):LocationUpdateSnsTopic}
     M1McleodDynamoTable: ${file(config/dynamodb/mach1McleodDynamoTable.yml):M1McleodDynamoTable}
     McleodApiLogTable: ${file(config/dynamodb/mcleodApiLogTable.yml):McleodApiLogTable}
+    LocationUpdatesErrorsTable: ${file(config/dynamodb/locationUpdatesErrorsTable.yml):LocationUpdatesErrorsTable}
 
 

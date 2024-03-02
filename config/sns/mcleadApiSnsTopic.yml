@@ -2,3 +2,9 @@ McleadApiSnsTopic:
   Type: AWS::SNS::Topic
   Properties:
     TopicName: omni-mcleod-api-topic-${self:provider.stage}
+McleadApiSnsSubscription:
+  Type: AWS::SNS::Subscription
+  Properties:
+    Protocol: email
+    Endpoint: anusha.kayakokula@bizcloudexperts.com
+    TopicArn: !Ref McleadApiSnsTopic

@@ -1,3 +1,10 @@
+/*
+* File: src\shared\dynamodb.js
+* Project: Omni-mach1-mcleod
+* Author: Bizcloud Experts
+* Date: 2023-08-02
+* Confidential and Proprietary
+*/
 const request = require('request');
 const axios = require('axios');
 

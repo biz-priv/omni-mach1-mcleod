@@ -1,3 +1,10 @@
+/*
+* File: src\csv-import.js
+* Project: Omni-datawarehouse-api-services
+* Author: Bizcloud Experts
+* Date: 2023-04-19
+* Confidential and Proprietary
+*/
 const AWS = require('aws-sdk');
 const moment = require('moment-timezone');
 const s3 = new AWS.S3({

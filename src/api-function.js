@@ -1,3 +1,10 @@
+/*
+* File: src\api-function.js
+* Project: Omni-datawarehouse-api-services
+* Author: Bizcloud Experts
+* Date: 2023-05-09
+* Confidential and Proprietary
+*/
 const AWS = require('aws-sdk');
 const moment = require('moment-timezone');
 const { putItem, updateItem } = require('./shared/dynamodb');

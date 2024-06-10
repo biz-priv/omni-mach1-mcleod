@@ -1,3 +1,10 @@
+/*
+* File: src\shared\google-api-helper.js
+* Project: Omni-mach1-mcleod
+* Author: Bizcloud Experts
+* Date: 2023-05-24
+* Confidential and Proprietary
+*/
 const request = require('request');
 
 const api_key = process.env.GOOGLE_API_TOKEN;

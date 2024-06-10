@@ -1,3 +1,10 @@
+/*
+* File: src\shared\dynamodb.js
+* Project: Omni-mach1-mcleod
+* Author: Bizcloud Experts
+* Date: 2023-04-19
+* Confidential and Proprietary
+*/
 const AWS = require("aws-sdk");
 var dynamodb = new AWS.DynamoDB.DocumentClient();
 

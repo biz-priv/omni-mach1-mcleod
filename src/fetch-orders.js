@@ -1,3 +1,10 @@
+/*
+* File: src\shared\s3.js
+* Project: Omni-datawarehouse-api-services
+* Author: Bizcloud Experts
+* Date: 2023-08-08
+* Confidential and Proprietary
+*/
 const {getRegion, getZipcode, updateOrder, getOrdersWithoutConsignee, getOrdersWithoutShipper} = require("./shared/mcleod-api-helper")
 const {getZipcodeFromGoogle} = require("./shared/google-api-helper")
 const moment = require('moment-timezone');

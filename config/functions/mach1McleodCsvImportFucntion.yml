@@ -2,6 +2,8 @@ function:
   name: omni-m1-mcleod-csv-import-${self:provider.stage}
   handler: src/csv-import.handler
   description: Omni Mach1 Mcleod
+  tags:
+    Name: mcleod-csv-import
   package:
     patterns:
       - "!**/*"

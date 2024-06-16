@@ -1,6 +1,8 @@
 stateMachines:
   OmniMcleodStateMachine:
     name: omni-mcleod-state-machine-${self:provider.stage}
+    tags:
+    Name: mcleod-state-machine
     events:
       - schedule: rate(2 minutes)
     definition:

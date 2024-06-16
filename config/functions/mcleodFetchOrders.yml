@@ -3,6 +3,8 @@ function:
   handler: src/fetch-orders.handler
   description: Omni Mach1 Mcleod
   timeout: 30
+  tags:
+    Name: mcleod-fetch-orders 
   package:
     patterns:
       - "!**/*"

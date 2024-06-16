@@ -2,6 +2,8 @@ function:
   name: omni-m1-mcleod-api-${self:provider.stage}
   handler: src/api-function.handler
   description: Omni Mach1 Mcleod
+  tags:
+    Name: mcleod-api
   package:
     patterns:
       - "!**/*"
